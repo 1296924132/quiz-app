@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>公文写作刷题</title>
+<style>
+  /* ========== CSS Variables & Reset ========== */
+  :root {
+    --bg: #f0f2f5;
+    --card-bg: rgba(255,255,255,0.85);
+    --card-border: rgba(255,255,255,0.3);
+    --card-shadow: 0 8px 32px rgba(0,0,0,0.08);
+    --text: #1a1a2e;
+    --text-secondary: #6b7280;
+    --primary: #6366f1;
+    --primary-light: #818cf8;
+    --primary-dark: #4f46e5;
+    --success: #10b981;
+    --success-bg: rgba(16,185,129,0.12);
+    --danger: #ef4444;
+    --danger-bg: rgba(239,68,68,0.12);
+    --warning: #f59e0b;
+    --border: #e5e7eb;
+    --tag-bg: #f3f4f6;
+    --radius: 16px;
+    --radius-sm: 10px;
+    --transition: 0.3s cubic-bezier(0.4,0,0.2,1);
+    --font: 'Segoe UI', system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  }
+  .dark {
+    --bg: #0f172a;
+    --card-bg: rgba(30,41,59,0.85);
+    --card-border: rgba(255,255,255,0.06);
+    --card-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    --text: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --border: #334155;
+    --tag-bg: #1e293b;
+    --success-bg: rgba(16,185,129,0.15);
+    --danger-bg: rgba(239,68,68,0.15);
+  }
+
+  /* ========== Base ========== */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 17px; }
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    transition: background var(--transition), color var(--transition);
+    overflow-x: hidden;
+  }
+
+  /* ========== Background Orbs ========== */
+  .bg-orbs {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    overflow: hidden;
+  }
+  .bg-orbs span {
+    position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.3;
+    animation: orbFloat 20s ease-in-out infinite;
+  }
+  .bg-orbs span:nth-child(1) {
+    width: 400px; height: 400px; background: var(--primary);
+    top: -100px; left: -100px; animation-delay: 0s;
+  }
+  .bg-orbs span:nth-child(2) {
+    width: 300px; height: 300px; background: var(--success);
+    bottom: -50px; right: -50px; animation-delay: -7s;
+  }
+  .bg-orbs span:nth-child(3) {
+    width: 250px; height: 250px; background: var(--warning);
+    top: 50%; left: 80%; animation-delay: -14s;
+  }
+  @keyframes orbFloat {
+    0%,100% { transform: translate(0,0) scale(1); }
+    33% { transform: translate(30px,-30px) scale(1.1); }
+    66% { transform: translate(-20px,20px) scale(0.9); }
+  }
+
+  /* ========== App Container ========== */
+  .app { position: relative; z-index: 1; max-width: 640px; margin: 0 auto; padding: 16px 16px 100px; }
+
+  /* ========== Header ========== */
+  .header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 0 8px; position: sticky; top: 0; z-index: 10;
+    background: var(--bg); backdrop-filter: blur(12px);
+    transition: background var(--transition);
+  }
+  .header h1 {
+    font-size: 1.45rem; font-weight: 700;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .header-actions { display: flex; gap: 8px; align-items: center; }
+  .theme-btn {
+    width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--border);
+    background: var(--card-bg); cursor: pointer; display: flex; align-items: center;
+    justify-content: center; font-size: 1.1rem; transition: all var(--transition);
+    backdrop-filter: blur(8px);
+  }
+  .theme-btn:hover { transform: scale(1.05); border-color: var(--primary); }
+
+  /* ========== Mini Stats Bar ========== */
+  .mini-stats {
+    display: flex; gap: 8px; margin: 12px 0 16px;
+    padding: 10px 16px; border-radius: var(--radius-sm);
+    background: var(--card-bg); backdrop-filter: blur(12px);
+    border: 1px solid var(--card-border); box-shadow: var(--card-shadow);
+    transition: all var(--transition);
+  }
+  .mini-stat { flex: 1; text-align: center; }
+  .mini-stat .num { font-size: 1.25rem; font-weight: 700; display: block; line-height: 1.4; }
+  .mini-stat .lbl { font-size: 0.78rem; color: var(--text-secondary); }
+  .mini-stat .num.total { color: var(--text); }
+  .mini-stat .num.done { color: var(--primary); }
+  .mini-stat .num.correct { color: var(--success); }
+  .mini-stat .num.wrong { color: var(--danger); }
+  .mini-stat .num.rate { color: var(--warning); }
+
+  /* ========== Tabs ========== */
+  .tabs {
+    display: flex; gap: 4px; padding: 4px;
+    background: var(--card-bg); backdrop-filter: blur(12px);
+    border-radius: var(--radius-sm); border: 1px solid var(--card-border);
+    margin-bottom: 16px; box-shadow: var(--card-shadow);
+    transition: all var(--transition);
+  }
+  .tab {
+    flex: 1; padding: 10px 12px; text-align: center; border-radius: 8px;
+    cursor: pointer; font-size: 0.92rem; font-weight: 600; border: none;
+    background: transparent; color: var(--text-secondary);
+    transition: all var(--transition); position: relative;
+  }
+  .tab.active {
+    background: var(--primary); color: #fff; box-shadow: 0 2px 12px rgba(99,102,241,0.3);
+  }
+  .tab:hover:not(.active) { background: var(--tag-bg); }
+  .tab .badge {
+    display: inline-block; background: var(--danger); color: #fff;
+    font-size: 0.65rem; padding: 1px 6px; border-radius: 10px;
+    margin-left: 4px; vertical-align: top;
+  }
+
+  /* ========== Panels ========== */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* ========== Question Card ========== */
+  .q-card {
+    background: var(--card-bg); backdrop-filter: blur(12px);
+    border-radius: var(--radius); border: 1px solid var(--card-border);
+    box-shadow: var(--card-shadow); padding: 28px 24px;
+    transition: all var(--transition); position: relative;
+    animation: cardIn 0.4s ease;
+  }
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .q-card.slide-out { animation: cardOut 0.25s ease forwards; }
+  @keyframes cardOut {
+    to { opacity: 0; transform: translateY(-10px); }
+  }
+  .q-card.slide-in { animation: cardIn 0.35s ease; }
+
+  .q-progress {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
+  }
+  .q-progress .p-text { font-size: 0.9rem; color: var(--text-secondary); font-weight: 600; }
+  .q-progress .p-bar-wrap { flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .q-progress .p-bar {
+    height: 100%; background: linear-gradient(90deg, var(--primary), var(--primary-light));
+    border-radius: 2px; transition: width 0.5s ease;
+  }
+
+  .q-type-badge {
+    display: inline-block; padding: 3px 12px; border-radius: 20px;
+    font-size: 0.8rem; font-weight: 700; margin-bottom: 16px;
+  }
+  .q-type-badge.judgment { background: var(--success-bg); color: var(--success); }
+  .q-type-badge.single { background: rgba(99,102,241,0.12); color: var(--primary); }
+  .q-type-badge.multi { background: rgba(245,158,11,0.12); color: var(--warning); }
+
+  .q-text {
+    font-size: 1.2rem; line-height: 1.75; font-weight: 550;
+    margin-bottom: 22px; letter-spacing: 0.01em;
+  }
+
+  /* ========== Options ========== */
+  .options { display: flex; flex-direction: column; gap: 8px; }
+
+  .opt-btn {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 18px; border-radius: var(--radius-sm);
+    border: 1.5px solid var(--border); background: transparent;
+    cursor: pointer; font-size: 1.05rem; text-align: left;
+    color: var(--text); transition: all 0.2s ease;
+    font-family: var(--font); line-height: 1.6;
+  }
+  .opt-btn:hover:not(:disabled) {
+    border-color: var(--primary); background: rgba(99,102,241,0.04);
+  }
+  .opt-btn .opt-label {
+    width: 30px; height: 30px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.85rem; font-weight: 700; flex-shrink: 0;
+    background: var(--tag-bg); transition: all 0.2s ease;
+  }
+  .opt-btn .opt-label.circle { border-radius: 50%; }
+  .opt-btn .opt-label.square { border-radius: 4px; }
+
+  /* Judgment specific */
+  .judgment-opts { display: flex; gap: 12px; }
+  .judgment-opts .opt-btn { flex: 1; justify-content: center; padding: 18px; font-size: 1.15rem; }
+
+  /* Selected states */
+  .opt-btn.selected { border-color: var(--primary); background: rgba(99,102,241,0.08); }
+  .opt-btn.selected .opt-label { background: var(--primary); color: #fff; }
+
+  /* Reveal states */
+  .opt-btn.correct { border-color: var(--success) !important; background: var(--success-bg) !important; }
+  .opt-btn.correct .opt-label { background: var(--success) !important; color: #fff !important; }
+  .opt-btn.wrong { border-color: var(--danger) !important; background: var(--danger-bg) !important; }
+  .opt-btn.wrong .opt-label { background: var(--danger) !important; color: #fff !important; }
+  .opt-btn.reveal-right { border-color: var(--success) !important; background: var(--success-bg) !important; }
+  .opt-btn.reveal-right .opt-label { background: var(--success) !important; color: #fff !important; }
+  .opt-btn:disabled { cursor: default; opacity: 0.7; }
+  .opt-btn:disabled.correct, .opt-btn:disabled.wrong, .opt-btn:disabled.reveal-right { opacity: 1; }
+
+  /* Multi-select check mode */
+  .multi-actions { display: flex; gap: 8px; margin-top: 12px; }
+  .multi-actions button {
+    flex: 1; padding: 12px; border-radius: var(--radius-sm);
+    border: none; cursor: pointer; font-weight: 700; font-size: 1rem;
+    font-family: var(--font); transition: all 0.2s ease;
+  }
+  .multi-actions .confirm-btn { background: var(--primary); color: #fff; }
+  .multi-actions .confirm-btn:hover { background: var(--primary-dark); }
+  .multi-actions .confirm-btn:disabled { opacity: 0.4; cursor: default; }
+  .multi-actions .clear-btn { background: var(--tag-bg); color: var(--text-secondary); }
+  .multi-actions .clear-btn:hover { background: var(--border); }
+
+  /* ========== Answer Reveal ========== */
+  .answer-reveal {
+    margin-top: 22px; padding: 18px 20px;
+    border-radius: var(--radius-sm);
+    animation: revealIn 0.4s ease;
+  }
+  @keyframes revealIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .answer-reveal.correct { background: var(--success-bg); border-left: 3px solid var(--success); }
+  .answer-reveal.wrong { background: var(--danger-bg); border-left: 3px solid var(--danger); }
+  .answer-reveal .ans-label { font-weight: 700; font-size: 1.05rem; margin-bottom: 6px; }
+  .answer-reveal.correct .ans-label { color: var(--success); }
+  .answer-reveal.wrong .ans-label { color: var(--danger); }
+  .answer-reveal .ans-text { font-size: 1rem; line-height: 1.7; color: var(--text-secondary); }
+  .answer-reveal .ans-text strong { color: var(--text); }
+
+  .explanation {
+    margin-top: 14px; padding: 14px 16px;
+    background: rgba(99,102,241,0.06); border-radius: var(--radius-sm);
+    border: 1px solid rgba(99,102,241,0.12);
+  }
+  .explanation .exp-label {
+    font-size: 0.82rem; font-weight: 700; color: var(--primary);
+    text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;
+  }
+  .explanation .exp-text { font-size: 0.95rem; line-height: 1.7; color: var(--text-secondary); }
+
+  /* ========== Next Button ========== */
+  .next-btn {
+    display: block; width: 100%; padding: 16px;
+    margin-top: 16px; border-radius: var(--radius-sm);
+    border: none; font-size: 1.1rem; font-weight: 700;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    color: #fff; cursor: pointer; transition: all var(--transition);
+    font-family: var(--font); box-shadow: 0 4px 16px rgba(99,102,241,0.25);
+  }
+  .next-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(99,102,241,0.35); }
+  .next-btn:active { transform: translateY(0); }
+  .next-btn:disabled { opacity: 0.4; cursor: default; transform: none; box-shadow: none; }
+
+  /* ========== Question Navigator ========== */
+  .q-nav {
+    display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px;
+    padding: 12px; border-radius: var(--radius-sm);
+    background: var(--card-bg); backdrop-filter: blur(12px);
+    border: 1px solid var(--card-border);
+  }
+  .q-nav .nav-title { width: 100%; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 6px; font-weight: 600; }
+  .q-nav .nav-dot {
+    width: 32px; height: 32px; border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.8rem; font-weight: 700; cursor: pointer;
+    border: 1.5px solid var(--border); background: transparent; color: var(--text-secondary);
+    transition: all 0.2s ease;
+  }
+  .q-nav .nav-dot:hover { border-color: var(--primary); transform: scale(1.1); }
+  .q-nav .nav-dot.current { border-color: var(--primary); background: var(--primary); color: #fff; }
+  .q-nav .nav-dot.correct { border-color: var(--success); background: var(--success); color: #fff; }
+  .q-nav .nav-dot.wrong { border-color: var(--danger); background: var(--danger); color: #fff; }
+
+  .done-msg {
+    text-align: center; padding: 60px 20px;
+    animation: cardIn 0.5s ease;
+  }
+  .done-msg .icon { font-size: 4rem; margin-bottom: 16px; }
+  .done-msg h2 { font-size: 1.6rem; margin-bottom: 10px; }
+  .done-msg p { font-size: 1.05rem; color: var(--text-secondary); margin-bottom: 24px; }
+
+  /* ========== Reset/Loop Buttons ========== */
+  .reset-btn {
+    padding: 9px 14px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--card-bg); cursor: pointer; font-size: 0.85rem; font-weight: 600;
+    color: var(--danger); font-family: var(--font); transition: all var(--transition);
+  }
+  .reset-btn:hover { border-color: var(--danger); background: var(--danger-bg); }
+
+  .loop-toggle {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 9px 16px; border-radius: 20px; border: 1.5px solid var(--border);
+    background: var(--card-bg); cursor: pointer; font-size: 0.85rem; font-weight: 600;
+    color: var(--text-secondary); font-family: var(--font); transition: all var(--transition);
+    margin-left: 4px;
+  }
+  .loop-toggle:hover { border-color: var(--primary); }
+  .loop-toggle.active {
+    border-color: var(--primary); background: rgba(99,102,241,0.1); color: var(--primary);
+  }
+  .loop-toggle .indicator {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--border); transition: all var(--transition);
+  }
+  .loop-toggle.active .indicator {
+    background: var(--primary); box-shadow: 0 0 8px rgba(99,102,241,0.4);
+  }
+
+  /* ========== Stats Panel ========== */
+  .stats-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;
+  }
+  .stat-card {
+    background: var(--card-bg); backdrop-filter: blur(12px);
+    border-radius: var(--radius-sm); border: 1px solid var(--card-border);
+    padding: 20px 16px; text-align: center; box-shadow: var(--card-shadow);
+    transition: all var(--transition);
+  }
+  .stat-card .s-icon { font-size: 1.7rem; margin-bottom: 8px; }
+  .stat-card .s-num { font-size: 1.8rem; font-weight: 800; line-height: 1.2; }
+  .stat-card .s-lbl { font-size: 0.85rem; color: var(--text-secondary); margin-top: 3px; }
+  .stat-card.accent1 .s-num { color: var(--primary); }
+  .stat-card.accent2 .s-num { color: var(--success); }
+  .stat-card.accent3 .s-num { color: var(--danger); }
+  .stat-card.accent4 .s-num { color: var(--warning); }
+
+  /* Progress ring */
+  .ring-wrap { display: flex; justify-content: center; margin: 12px 0 18px; }
+  .progress-ring { position: relative; width: 120px; height: 120px; }
+  .progress-ring svg { transform: rotate(-90deg); }
+  .progress-ring .bg-circle { fill: none; stroke: var(--border); stroke-width: 8; }
+  .progress-ring .fg-circle {
+    fill: none; stroke: var(--primary); stroke-width: 8; stroke-linecap: round;
+    transition: stroke-dasharray 0.8s ease;
+  }
+  .progress-ring .center-text {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+  }
+  .progress-ring .center-text .pct { font-size: 1.7rem; font-weight: 800; color: var(--text); }
+  .progress-ring .center-text .pct-lbl { font-size: 0.8rem; color: var(--text-secondary); }
+
+  /* ========== Error Book ========== */
+  .err-empty {
+    text-align: center; padding: 60px 20px; color: var(--text-secondary);
+  }
+  .err-empty .icon { font-size: 4rem; margin-bottom: 16px; opacity: 0.5; }
+  .err-empty p { font-size: 1.05rem; }
+
+  .bookmark-btn {
+    flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%;
+    border: 1.5px solid var(--border); background: var(--card-bg);
+    cursor: pointer; font-size: 1.4rem; line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--warning); transition: all 0.25s ease;
+  }
+  .bookmark-btn:hover { transform: scale(1.15); border-color: var(--warning); box-shadow: 0 0 12px rgba(245,158,11,0.25); }
+
+  .err-item {
+    background: var(--card-bg); backdrop-filter: blur(12px);
+    border-radius: var(--radius-sm); border: 1px solid var(--card-border);
+    padding: 14px 16px; margin-bottom: 10px; cursor: pointer;
+    transition: all var(--transition); box-shadow: var(--card-shadow);
+  }
+  .err-item:hover { border-color: var(--danger); }
+  .err-item .e-header { display: flex; justify-content: space-between; align-items: start; gap: 8px; }
+  .err-item .e-q { font-size: 1rem; line-height: 1.6; flex: 1; }
+  .err-item .e-tag {
+    flex-shrink: 0; padding: 3px 10px; border-radius: 12px;
+    font-size: 0.78rem; font-weight: 700;
+  }
+  .err-item .e-tag.judgment { background: var(--success-bg); color: var(--success); }
+  .err-item .e-tag.single { background: rgba(99,102,241,0.12); color: var(--primary); }
+  .err-item .e-tag.multi { background: rgba(245,158,11,0.12); color: var(--warning); }
+  .err-item .e-answer { font-size: 0.9rem; color: var(--text-secondary); margin-top: 6px; }
+  .err-item .e-answer .wrong-ans { color: var(--danger); font-weight: 700; }
+  .err-item .e-answer .correct-ans { color: var(--success); font-weight: 700; }
+
+  .err-actions { margin-top: 16px; display: flex; gap: 8px; }
+  .err-actions button {
+    flex: 1; padding: 12px; border-radius: var(--radius-sm);
+    border: 1px solid var(--border); background: var(--card-bg);
+    cursor: pointer; font-size: 0.95rem; font-weight: 600;
+    color: var(--text); font-family: var(--font);
+    transition: all var(--transition);
+  }
+  .err-actions button:hover { border-color: var(--danger); color: var(--danger); }
+  .err-actions .retry-btn { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .err-actions .retry-btn:hover { background: var(--primary-dark); border-color: var(--primary-dark); color: #fff; }
+
+  /* ========== Mode Filter ========== */
+  .mode-filter {
+    display: flex; gap: 4px; padding: 3px;
+    background: var(--card-bg); backdrop-filter: blur(12px);
+    border-radius: var(--radius-sm); border: 1px solid var(--card-border);
+    margin-bottom: 16px; transition: all var(--transition);
+  }
+  .mode-filter button {
+    flex: 1; padding: 9px 8px; text-align: center; border-radius: 7px;
+    cursor: pointer; font-size: 0.88rem; font-weight: 600; border: none;
+    background: transparent; color: var(--text-secondary);
+    transition: all var(--transition); font-family: var(--font);
+  }
+  .mode-filter button.active { background: var(--primary); color: #fff; }
+  .mode-filter button:hover:not(.active) { background: var(--tag-bg); }
+
+  /* ========== Responsive ========== */
+  @media (max-width: 420px) {
+    .app { padding: 10px 10px 80px; }
+    html { font-size: 15px; }
+    .q-card { padding: 20px 16px; }
+    .q-text { font-size: 1.05rem; }
+    .opt-btn { padding: 12px 14px; font-size: 0.95rem; }
+    .opt-btn .opt-label { width: 26px; height: 26px; font-size: 0.78rem; }
+    .stats-grid { gap: 8px; }
+    .stat-card { padding: 14px 10px; }
+    .stat-card .s-num { font-size: 1.4rem; }
+  }
+
+  /* ========== Scrollbar ========== */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+</style>
+</head>
+<body>
+<div class="bg-orbs"><span></span><span></span><span></span></div>
+
+<div class="app" id="app">
+  <!-- Header -->
+  <div class="header">
+    <h1>📝 公文写作刷题</h1>
+    <div class="header-actions">
+      <button class="loop-toggle" id="loopToggle" onclick="toggleLoop()" title="循环刷题模式">
+        <span class="indicator"></span> 循环
+      </button>
+      <button class="reset-btn" onclick="resetAll()" title="重置进度">🔄 重置</button>
+      <button class="theme-btn" onclick="toggleTheme()" id="themeBtn" title="切换主题">🌙</button>
+    </div>
+  </div>
+
+  <!-- Mini Stats -->
+  <div class="mini-stats" id="miniStats">
+    <div class="mini-stat"><span class="num total" id="msTotal">0</span><span class="lbl">总题</span></div>
+    <div class="mini-stat"><span class="num done" id="msDone">0</span><span class="lbl">已做</span></div>
+    <div class="mini-stat"><span class="num correct" id="msCorrect">0</span><span class="lbl">正确</span></div>
+    <div class="mini-stat"><span class="num wrong" id="msWrong">0</span><span class="lbl">错误</span></div>
+    <div class="mini-stat"><span class="num rate" id="msRate">0%</span><span class="lbl">正确率</span></div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" data-tab="practice" onclick="switchTab('practice')">📖 刷题</button>
+    <button class="tab" data-tab="stats" onclick="switchTab('stats')">📊 统计</button>
+    <button class="tab" data-tab="errors" onclick="switchTab('errors')">
+      ❌ 错题本 <span class="badge" id="errBadge" style="display:none">0</span>
+    </button>
+    <button class="tab" data-tab="bookmarks" onclick="switchTab('bookmarks')">
+      ⭐ 收藏 <span class="badge" id="bmBadge" style="display:none">0</span>
+    </button>
+  </div>
+
+  <!-- Practice Panel -->
+  <div class="panel active" id="panelPractice">
+    <div class="mode-filter">
+      <button class="active" data-mode="all" onclick="setMode('all')">📚 全部</button>
+      <button data-mode="judgment" onclick="setMode('judgment')">✅ 判断</button>
+      <button data-mode="single" onclick="setMode('single')">🔤 单选</button>
+      <button data-mode="multi" onclick="setMode('multi')">📑 多选</button>
+    </div>
+    <div id="questionArea"></div>
+  </div>
+
+  <!-- Stats Panel -->
+  <div class="panel" id="panelStats">
+    <div class="ring-wrap">
+      <div class="progress-ring">
+        <svg width="120" height="120">
+          <circle class="bg-circle" cx="60" cy="60" r="50"/>
+          <circle class="fg-circle" cx="60" cy="60" r="50" id="ringCircle" stroke-dasharray="0 314"/>
+        </svg>
+        <div class="center-text">
+          <span class="pct" id="ringPct">0%</span>
+          <span class="pct-lbl">正确率</span>
+        </div>
+      </div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card accent1"><div class="s-icon">📚</div><div class="s-num" id="stTotal">0</div><div class="s-lbl">总题数</div></div>
+      <div class="stat-card accent1"><div class="s-icon">✍️</div><div class="s-num" id="stDone">0</div><div class="s-lbl">已作答</div></div>
+      <div class="stat-card accent2"><div class="s-icon">✅</div><div class="s-num" id="stCorrect">0</div><div class="s-lbl">正确</div></div>
+      <div class="stat-card accent3"><div class="s-icon">❌</div><div class="s-num" id="stWrong">0</div><div class="s-lbl">错误</div></div>
+    </div>
+    <div class="stats-grid" style="margin-top:0">
+      <div class="stat-card accent4"><div class="s-icon">🔄</div><div class="s-num" id="stAttempts">0</div><div class="s-lbl">总答题次数</div></div>
+      <div class="stat-card accent2"><div class="s-icon">📈</div><div class="s-num" id="stAvgRate">0%</div><div class="s-lbl">综合正确率</div></div>
+      <div class="stat-card accent1"><div class="s-icon">⭐</div><div class="s-num" id="stBookmarked">0</div><div class="s-lbl">收藏题数</div></div>
+      <div class="stat-card accent4"><div class="s-icon">⏱️</div><div class="s-num" id="stTimer" style="font-size:1.0rem">0分0秒</div><div class="s-lbl">本次学习时长</div></div>
+    </div>
+  </div>
+
+  <!-- Errors Panel -->
+  <div class="panel" id="panelErrors">
+    <div id="errorList"></div>
+  </div>
+
+  <div class="panel" id="panelBookmarks">
+    <div id="bookmarkList"></div>
+  </div>
+
+  <!-- Footer -->
+  <div style="text-align:center;padding:28px 0 12px;font-size:0.85rem;color:var(--text-secondary);opacity:0.7;border-top:1px solid var(--border);margin-top:16px;letter-spacing:0.02em">
+    ✦ 创作人：<strong>@那片梧桐那场雨.</strong> ✦
+  </div>
+</div>
+
+<script>
+// ========== DATA ==========
+const QUESTION_DATA = {"judgments":[{"id":1,"type":"judgment","question":"国家主席令、国务院总理令以及机关首长可以以他个人的名义发布对所属工作人员的任免令。","answer":false,"options":null,"explanation":"命令（令）的发布虽然以领导人名义签署，但并非以个人身份发布，而是代表法定机关行使职权。任免令须以机关名义或依法授权发布，领导人个人无权以私人身份发布任免令。根据《党政机关公文处理工作条例》，命令的法定作者是机关而非个人。"},{"id":2,"type":"judgment","question":"上级下发的公文，一经办理完毕，就没有价值了，可以随意处理。","answer":false,"options":null,"explanation":"公文办理完毕后应当归档保存，作为历史记录和凭证依据。根据《机关文件材料归档范围和文书档案保管期限规定》，上级下发的公文具有查考价值，不可随意处理，应按档案管理规定整理归档或按规定销毁，不能随意丢弃。"},{"id":3,"type":"judgment","question":"广义的公文既包括党政机关正式发布的法定公文，也包括各种机关、社会团体、企事业等单位常用应用文书。","answer":true,"options":null,"explanation":"广义公文与狭义公文相对。狭义公文专指党政机关法定公文，即《党政机关公文处理工作条例》规定的15种公文。广义公文还包括事务文书（计划、总结等）、专用文书（经济文书、法律文书等），涵盖机关团体企事业单位使用的各类应用文书。"},{"id":4,"type":"judgment","question":"党政公文和一般文章写作一样，都是代表撰写个人的意愿，表达的是个人的思想观点。","answer":false,"options":null,"explanation":"公文写作具有法定作者和法定权威，代表机关意志而非个人观点。公文写作要求使用规范体式、遵循固定格式，语言要求准确、简明、平实、庄重，不追求个性张扬和个人风格，与一般写作的创作性有本质区别。"},{"id":5,"type":"judgment","question":"党政公文的作用包括行为规范、领导与指导、信息沟通、凭证记载、宣传教育、知照、协调等作用。","answer":true,"options":null,"explanation":"公文作为机关管理工具，具有多重社会功能：行为规范作用（法规性公文）、领导指导作用（下行文）、信息传递作用（沟通情况）、凭证依据作用（存档备查）、沟通联系作用（平行文）、宣传教育作用（通报等），这是公文功能的基本概括。"},{"id":6,"type":"judgment","question":"公文写作中的层次序数有四级，依次为“一、”“（一）”“（ 1 ）”“ 1. ”。","answer":false,"options":null,"explanation":"不同公文文种功能不同，语言要求也各异。如命令要求庄重严肃、语气坚定；报告要求客观准确、陈述清晰；函要求谦和得体、平等协商；批复要求针对性明确、态度鲜明。不能千篇一律，须按文种特点调整语言风格。"},{"id":7,"type":"judgment","question":"不同的公文文种有不同的性能和作用，划清各种公文的使用界限，有利于机关工作的顺利进行和实现公文处理的规范化、制度化。","answer":true,"options":null,"explanation":"准确选用文种是公文写作的基本要求。《党政机关公文处理工作条例》规定了15种公文，每种有特定功能和适用范围。正确区分文种界限有助于机关工作顺利进行，是公文处理规范化、制度化的重要体现。"},{"id":8,"type":"judgment","question":"从一个单位的对外文件来说，可以按照它们的行文关系，划分为上行文、下行文两类。","answer":false,"options":null,"explanation":"根据行文方向，公文可分为上行文（下级对上级，如请示、报告）、下行文（上级对下级，如通知、批复）和平行文（同级或不相隶属机关之间，如函）。这是公文以行文关系为标准的分类方式。"},{"id":9,"type":"judgment","question":"纪要，一般需要对会议内容逐项记载，具有指导、指挥、协调、交流的重要作用和意义。","answer":false,"options":null,"explanation":"纪要是法定公文之一，其主要功能是记载会议情况和议定事项，具有纪实性和提要性。但纪要本身不具有直接指挥作用，须经上级机关批准或转发后才具有约束力。题目中'指导、指挥'的说法夸大了纪要的直接效力。"},{"id":10,"type":"judgment","question":"决议和决定都必须经过会议讨论通过形成。","answer":false,"options":null,"explanation":"决议必须经会议讨论通过才能生效，这是'决议'的法定程序要求。而决定既可以经会议讨论通过，也可以由领导机关或负责人直接制定发布。二者在形成程序上的区别是显著的，决定不必须经过会议程序。"},{"id":11,"type":"judgment","question":"新东方建筑公司希望从重庆理工大学招考应届毕业生，双方沟通应当使用函。","answer":true,"options":null,"explanation":"函适用于不相隶属机关之间商洽工作、询问和答复问题。德国西门子公司是企业，重庆邮电大学是事业单位，二者不存在隶属关系。企业希望与高校进行双向沟通（如招聘事宜），使用函进行联系符合规范。"},{"id":12,"type":"judgment","question":"为减少发文，在向上级机关呈送的报告中，可附带请示问题。","answer":false,"options":null,"explanation":"根据《党政机关公文处理工作条例》规定，报告不得夹带请示事项。报告是陈述性公文，不需上级答复；请示是祈请性公文，要求上级批复。二者性质不同，混同使用会影响公文处理效率和质量。"},{"id":13,"type":"judgment","question":"通告系普发性公文，多用张贴形式，不必写主送机关。","answer":true,"options":null,"explanation":"通告是周知性公文，但其受文对象是社会公众，具有不特定性。根据《党政机关公文格式》，通告一般不写主送机关。通告可通过张贴、报刊、广播等方式发布，不要求标注主送机关。"},{"id":14,"type":"judgment","question":"处理日常工作中的一般事务性问题，不宜使用“意见”这一文种。","answer":true,"options":null,"explanation":"计划类事务文书包括多种类型：规划（长远）、纲要（纲领性）、设想（初步）、打算（近期）、安排（短期）、要点（重点）、方案（具体）等。'打算''安排'是计划的具体类型，适用于近期具体工作的安排。"},{"id":15,"type":"judgment","question":"就某项专题活动，上级机关要求每个季度写报告上交，小张在写夏季报告的时候，顺便把秋季报告也写了。","answer":false,"options":null,"explanation":"总结应针对特定时间段或特定任务撰写。上级要求写专项活动总结，小王却写秋季总结，内容与上级要求不匹配，属于文不对题。总结的写作必须紧扣指定范围，不能自行变更主题或时间段。"},{"id":16,"type":"judgment","question":"某地发生恶性犯罪事件，向市公安局反映有关情况，用报告行文。","answer":true,"options":null,"explanation":"报告适用于向上级机关汇报工作、反映情况、答复询问。发生突发事件后，公安机关向上级主管机关反映有关情况，使用'报告'文种符合《党政机关公文处理工作条例》的规定，属于情况报告。"},{"id":17,"type":"judgment","question":"在报告的结尾一般要谈“今后的打算”，它主要是发出号召，抒写豪情。","answer":false,"options":null,"explanation":"并非所有报告结尾都必须写'工作打算'。报告种类多样，如情况报告侧重反映事实，答复报告侧重回答问题，报送报告侧重说明附件。是否写工作打算应根据实际情况和行文目的决定，非硬性要求。"},{"id":18,"type":"judgment","question":"报告一般发给直接上级机关，学院受市局和教委双重领导，所以报告的主送机关要全部写上。","answer":false,"options":null,"explanation":"受双重领导的机关向上级报送请示，应根据内容确定主送机关和抄送机关，而非将所有上级列为主送。主送机关应只有一个（负责答复的上级），其余上级列为抄送，以明确答复责任。"},{"id":19,"type":"judgment","question":"报告结束语一般为“以上报告当否，请指示”。","answer":false,"options":null,"explanation":"该表述将请示和报告的时间关系完全说反了。请示是事前请示，必须在事项实施前获得批准；报告是事后或事中汇报，用于反映已完成或正在进行的工作情况。"},{"id":20,"type":"judgment","question":"请示和报告的不同之处在于，请示多在事情发生之后，报告往往是要写在事前。","answer":false,"options":null,"explanation":"正确的理解是：请示须在事前进行，经上级批准后方可实施；报告可在事中或事后进行，用于汇报情况。题目中的表述完全颠倒了两者的时间关系，属于根本性错误。"},{"id":21,"type":"judgment","question":"《关于请求补发××进出口有限公司企业出口补贴的请示》 , 标题的拟定是否正确。","answer":false,"options":null,"explanation":"题干虽未给出完整标题，但'关于补发消防器材'不包含文种，不符合公文标题三要素（发文机关、事由、文种）的要求。正确的标题应为'××公司关于补发消防器材的请示'，文种必须明确。"},{"id":22,"type":"judgment","question":"意见可以上行 , 也可以下行 , 平行。","answer":true,"options":null,"explanation":"请示是上行文，只能向有隶属关系的上级机关使用。平级机关之间或不相隶属机关之间需要请求协助或批准时，应使用'函'（请批函）而非'请示'。这是行文规则的基本要求。"},{"id":23,"type":"judgment","question":"省政府将国务院文件转发给省所辖的地 市 ) 、县政府及直属单位 , 要求他们贯彻执行的文件应是通知。","answer":true,"options":null,"explanation":"报告是陈述性公文，主要功能是向上级汇报工作、反映情况、答复询问，不要求上级批复。这是报告与请示的本质区别之一。报告的内容通常'只报不批'。"},{"id":24,"type":"judgment","question":"上级机关在收到下级报告后 , 有义务及时回复 , 以确保工作的正常开展。","answer":false,"options":null,"explanation":"根据《党政机关公文处理工作条例》第十五条规定，报告中不得夹带请示事项。如有请示事项应当另行制文，坚持一文一事原则，以保证公文处理的规范化和高效率。"},{"id":26,"type":"judgment","question":"公文的二级标题应当使用方正仿宋四号字体。","answer":false,"options":null,"explanation":"层次体现公文内容的内在逻辑关系，是思想内容的表达次序，通常按并列式、递进式或总分式安排；段落是形式上的自然划分单位，反映行文的节奏和停顿。层次可通过若干段落来表现。"},{"id":27,"type":"judgment","question":"党政机关、社会团体、企事业单位，只要是依法成立并合法存在的，就可以成为公文的法定作者。","answer":true,"options":null,"explanation":"严谨指逻辑严密、因果相承；自然指起承转合、过渡顺畅；完整指要素齐全、结构完满；统一指风格一致、前后呼应。这四项是公文结构安排的基本要求，确保公文的规范性和可读性。"},{"id":28,"type":"judgment","question":"公文时机关的喉舌，可以代表机关发言，并代表机关的法定权威。","answer":true,"options":null,"explanation":"该表述将说明和叙述的功能说反了。说明重在解说和阐释，即介绍事物的性质、特征、功用等；叙述重在告知和陈述，即交代事情经过、陈述客观事实。二者功能不同，不可混淆。"},{"id":29,"type":"judgment","question":"党政机关的公文是党政机关实施领导、履行职能、处理公务的具有特定效力和规范体式的文书。","answer":true,"options":null,"explanation":"调查报告、通报、消息等文体最常用的表达方式是以叙述为主。这些文体重在陈述客观事实，让事实说话。可在叙述事实的基础上辅以适当的议论和分析，但主要表达方式是叙述而非议论。"},{"id":30,"type":"judgment","question":"公文在排版时，一般每面排 22 行，每行排 28 个字，并撑满版心。","answer":true,"options":null,"explanation":"总结既要叙述工作情况、陈述事实（叙），又要分析经验教训、评价得失（议）。夹叙夹议是最适合总结的表达方式，在叙述事实的基础上进行分析议论，做到事理结合、以事明理。"},{"id":31,"type":"judgment","question":"附件是用来补充说明正文的，是公文的组成部分。","answer":false,"options":null,"explanation":"得体不仅要求语言准确，还要求语体风格、语气口吻符合公文的特定语境、对象和文种要求。得体包括：文体语体相符、身份语气恰当（上行尊重、下行庄重、平行平和）、感情色彩适度。"},{"id":33,"type":"judgment","question":"决议适用于会议讨论通过的重大决策事项。","answer":true,"options":null,"explanation":"公文语言以实用为目的，以叙述、说明、议论为主要表达方式，描述的方法极少使用。虽然适当运用形象化词语可增强生动性，但公文强调客观准确、简洁庄重，不宜过多使用文学性描写。"},{"id":34,"type":"judgment","question":"决定可以用于奖惩有关单位和人员。","answer":true,"options":null,"explanation":"公文语言的得体恰恰要求根据行文关系把握语气分寸。上行文应尊重谦恭（如'请''恳请'），下行文应明确庄重（如'决定''要求'），平行文应平等协商（如'商请''函告'），不能一概平等。"},{"id":35,"type":"judgment","question":"公告适用于向国内外宣布重要事项或者法定事项。","answer":true,"options":null,"explanation":"根据《党政机关公文格式》规定，公文标题中除书名号（用于法规、规章名称）和引号（用于特定称谓）外，一般不使用其他标点符号。'一律不能使用'的表述过于绝对，与规范不符。"},{"id":36,"type":"judgment","question":"总结是非法定公文。","answer":true,"options":null,"explanation":"根据2012年发布的《党政机关公文格式》（GB/T 9704-2012），主题词已不再是公文格式的必备要素。2012年之前的旧格式要求标引主题词，但新标准已取消此项要求。"},{"id":37,"type":"judgment","question":"通告适用于向国内外宣布重要事项或者法定事项。","answer":false,"options":null,"explanation":"公文具有法定的格式规范和行文规则，这是公文区别于一般文章、新闻报道、学术论文等其他文体的重要标志。法定格式和行文规则确保公文的严肃性、规范性和权威性。"},{"id":38,"type":"judgment","question":"议案适用于各级人民政府按照法律程序向上级人民代表大会或者人民代表大会常务委员会提请审议事项。","answer":false,"options":null,"explanation":"法定作者（依法成立的组织）、法定权威（代表机关权力）、特定格式（规范的书面体式）和处理程序（收发文处理规范）这四点是公文区别于一般文章的四个本质特征。"},{"id":39,"type":"judgment","question":"函适用于各级机关商洽工作、询问和答复问题、请求批准和答复审批事项。","answer":false,"options":null,"explanation":"请示和报告均为上行文，必须用于下级对上级。平行文用于同级机关或不相隶属机关之间，应当使用函、意见（平行使用）等文种。这是根据行文关系确定文种的基本原则。"},{"id":40,"type":"judgment","question":"会议记要适用于记载会议主要情况和议定事项。","answer":false,"options":null,"explanation":"一文一事是请示写作的核心规则。《党政机关公文处理工作条例》规定，请示应当一文一事。多个事项挤在同一请示中，可能因部分事项存疑而延迟整体批复，也增加了上级分类处理的难度。"},{"id":41,"type":"judgment","question":"简报、纪要、调查报告、请示都可以采用正题和副题的写作。","answer":false,"options":null,"explanation":"请示理由是否充分直接关系到上级是否批准。理由充分具体、事实清楚、数据翔实，上级才能准确判断情况的必要性和紧迫性，从而做出合理批复。但也要注意言简意赅，避免冗长。"},{"id":42,"type":"judgment","question":"通常一件公文只有一个主送机关，防止多头主送。","answer":true,"options":null,"explanation":"工作报告主体通常采用'四段式'结构：基本情况概述（背景、过程）、主要成绩和做法（成效、措施）、存在的问题和教训（不足、反思）、今后的打算（改进方向）。这是报告写作的常用结构。"},{"id":43,"type":"judgment","question":"公文的制发必须符合客观实际，反映客观事物的本来面貌，不能报喜不报忧。","answer":true,"options":null,"explanation":"根据《党政机关公文处理工作条例》第八条，报告适用于向上级机关汇报工作、反映情况，答复上级机关的询问，也适用于向上级机关报送文件、物件等。报送报告是报告的常见类型。"},{"id":44,"type":"judgment","question":"公文写作必须及时迅速，把握时机，适应机关行政管理需要提高机关工作效率。","answer":true,"options":null,"explanation":"通知主要用于下行，但也可用于平行（如任免通知、会议通知在一定条件下）。通告是公布性公文，面向社会公众，无固定行文方向，在分类上不宜简单归为'下行文'。"},{"id":45,"type":"judgment","question":"规范性文件是以强制力推行的用以规范各种行为规范的文件。","answer":true,"options":null,"explanation":"通告是公布性公文，面向社会公众发布。其发布方式灵活多样，可张贴于公共场所、单位公告栏，也可通过报纸、广播、电视等新闻媒体刊载，以达到广泛周知的目的。"},{"id":46,"type":"judgment","question":"通报用于反映新情况、新问题，行文强调及时快捷。","answer":true,"options":null,"explanation":"通告的受文对象是社会公众，范围广泛且不特定。与通知不同，通告不标注主送机关，面向一定范围内的所有人员、单位，而非特定机关或个人。这是通告区别于通知的重要特征。"},{"id":47,"type":"judgment","question":"批复的主送机关是下级机关。","answer":false,"options":null,"explanation":"通知需要将有关事项告知相关单位或个人，通告将有关事项告知社会公众，二者都具有让受文对象知晓相关内容的周知性功能，均属于周知性公文。"},{"id":48,"type":"judgment","question":"通知具有多种功能，既能上传，又可以下达。","answer":false,"options":null,"explanation":"根据《党政机关公文处理工作条例》第八条第九款，通报适用于表彰先进、批评错误、传达重要精神和告知重要情况。表彰性通报和批评性通报是通报的两种主要类型。"},{"id":49,"type":"judgment","question":"由下级机关制发的法规和规章，规范范围内的上级机关可以不受其约束。","answer":false,"options":null,"explanation":"通报和通知都具有较强的时效性。通报所涉及的表彰或批评须及时发布以发挥教育作用；通知所传达的事项往往有明确的时间要求。过时的通报和通知会失去实际效用。"},{"id":50,"type":"judgment","question":"自主的行政管理法规可以创造新的规则。","answer":true,"options":null,"explanation":"此题应使用通告而非公告。公告适用于向国内外宣布重要事项或法定事项；通告适用于在一定范围内公布应当遵守或周知的事项。纳税登记验证属于特定行政管辖范围内的周知事项，应用通告。"},{"id":51,"type":"judgment","question":"规范性公文的生效日期应是公文起草完成的时间。 ( )","answer":false,"options":null,"explanation":"批复是下行文（上级对下级）；具有被动性（先有请示后有批复，有问才答）；针对性（针对请示事项作答）；权威性（代表上级机关意见，下级须执行）。这四项是批复的基本特点。"},{"id":52,"type":"judgment","question":"在规范性公文中，应当使用拟、打算、准备等词汇修饰意图和要求。","answer":false,"options":null,"explanation":"批复须针对请示事项逐一答复，坚持一文一批。如请示提出多个事项，批复应逐项明确表态（同意、不同意或部分同意），做到就事论事、不枝不蔓，确保答复清晰明确。"},{"id":53,"type":"judgment","question":"在答复询问报告中， 可以同时汇报本机关的最近工作进程。","answer":false,"options":null,"explanation":"批复开头应引述来文的标题和发文字号，如'你单位《关于×××的请示》（×发〔2023〕×号）收悉'。这是批复的标准开头方式，表明批复的针对性和依据。"},{"id":54,"type":"judgment","question":"向上级机关及时汇报工作是下级机关必须遵守的一项工作制度。","answer":true,"options":null,"explanation":"函是典型的平行文，适用于不相隶属机关之间商洽工作、询问和答复问题、请求批准和答复审批事项。但在实践中，函的使用范围已扩展到不相隶属机关间的各种正式沟通。"},{"id":55,"type":"judgment","question":"请示的内容必须是属于本机关职权范围之内的事。","answer":false,"options":null,"explanation":"按功能划分，函可分为三类：商洽函（商洽工作、联系事宜）、问复函（询问问题、答复询问）、请批函（向有关主管部门请求批准）。这是函的常见分类方式。"},{"id":56,"type":"judgment","question":"工作报告应在工作开始之前写，以求得上级领导的指导。","answer":false,"options":null,"explanation":"计划是对未来工作的预先安排和设想，着眼未来，回答'将要做什么''怎么做'；总结是对过去实践的系统回顾和评价，着眼过去，回答'做了什么''结果如何'。一前一后，相辅相成。"},{"id":57,"type":"judgment","question":"综合性总结报告是总结一个机关在一定时期内的实践经验。","answer":true,"options":null,"explanation":"制定计划的核心要求是实事求是、切实可行，立足实际条件来设定目标和措施。盲目追求开拓创新而脱离实际，会导致计划无法执行，失去计划的意义。可行性和现实性是计划的首要原则。"},{"id":58,"type":"judgment","question":"撰制规范性公文应当特别注意维护文件的条理性。","answer":true,"options":null,"explanation":"计划的三要素：目标（明确的任务和要求，回答'做什么'）、措施（实现目标的方法和手段，回答'怎么做'）、步骤（时间安排和先后顺序，回答'何时做'）。三者缺一不可。"},{"id":59,"type":"judgment","question":"规定与办法的不同点在于规定比办法更具体、精细，所针对事物的规模相对小一些。","answer":false,"options":null,"explanation":"总结是本单位（或个人）对自己工作的回顾和反思，应从自身角度出发，使用第一人称'我'或'我们'来写。即使是单位总结，也应以'我们'的口吻来写，体现主体的特定性。"},{"id":60,"type":"judgment","question":"决定可以用来规范人们的行为，具有法定的强制力。","answer":true,"options":null,"explanation":"总结正文的常规结构包括：基本情况（时间、背景、任务）、主要成绩与收获（成果、数据）、经验体会（做法、认识）、存在的问题与教训（不足、反思）、今后的打算（改进措施）。"},{"id":61,"type":"judgment","question":"做会议记录时，主持人的开场白是会议大概情况的简单说明，不能一笔带过。","answer":true,"options":null,"explanation":"简报属于事务文书，不属于《党政机关公文处理工作条例》规定的15种法定公文。简报用于内部交流信息、反映情况，不具备法定效力，不能作为正式公文对外发布或作为办事依据。"},{"id":62,"type":"judgment","question":"简报常被称为“简讯”“动态”“要情”“摘报”“消息”等。","answer":false,"options":null,"explanation":"公文标题的标准结构是'发文机关+关于+事由+的+文种'，如《国务院关于加强食品安全工作的决定》。三要素完整是规范标题的基本要求，确保公文来源、内容和性质一目了然。"},{"id":63,"type":"judgment","question":"调查报告的核心是实事求是地反映和分析客观事实。","answer":true,"options":null,"explanation":"眉首（版头）部分包括份号、密级和保密期限、紧急程度、发文机关标志、发文字号、签发人等要素。标题和主送机关属于公文主体部分的要素，不在眉首范围内。"},{"id":64,"type":"judgment","question":"“应用文”一词，最早见于宋代。","answer":true,"options":null,"explanation":"公文正文的'三段式'结构：开头说明缘由（为什么行文，引述依据），主体阐述事项（主要内容、具体安排），结尾提出要求或使用规范结语（如'请批示''特此通知'）。这是公文的通用结构。"},{"id":65,"type":"judgment","question":"公文的成文时间是指它的印制时间。（ ）","answer":false,"options":null,"explanation":"根据《党政机关公文格式》规定，版记是公文格式的末端部分，包括抄送机关（需了解公文内容而不负责办理的机关）、印发机关（公文印制主管部门）和印发日期（公文印发的时间）等要素。"},{"id":66,"type":"judgment","question":"报告在一文一旨的前提下，有时也可以一文数事。（ ）","answer":true,"options":null,"explanation":"公文标题不能省略发文机关和事由而只写文种。在特殊情况下，如某些周知性公文（公告、通告）或内部文件，可省略发文机关，但至少应有事由和文种两部分，不能只写文种。"},{"id":67,"type":"judgment","question":"通报、命令、决定都可以用来嘉奖人员。（ ）","answer":true,"options":null,"explanation":"《党政机关公文处理工作条例》第三十一条规定，经批准公开发布的公文，同发文机关正式印发的公文具有同等效力。因此，在报刊上全文发布的行政法规、规章应当视为正式公文遵照执行。"},{"id":68,"type":"judgment","question":"调查报告属于公文中的“报告”这一文种。（ ）","answer":false,"options":null,"explanation":"实事求是是公文写作的基本原则。《党政机关公文处理工作条例》要求公文内容必须真实可靠、数据准确、符合实际情况，不得虚构夸张或弄虚作假，这是公文法定权威性的基础。"},{"id":69,"type":"judgment","question":"党政机关公文是日常应用文，不具法定效力。（ ）","answer":false,"options":null,"explanation":"行文制度包括行文关系、行文方向、行文方式等规范。科学合理的行文制度能够确保公文的流转有序进行，避免越级行文、多头主送等乱象，维护公文处理的严肃性和规范性。"},{"id":70,"type":"judgment","question":"主送机关应当使用全程或者规范化简称、统称。 （ ）","answer":true,"options":null,"explanation":"《党政机关公文处理工作条例》第十三条明确规定，行文关系根据隶属关系和职权范围确定。隶属关系包括领导关系和指导关系，职权范围指各机关的法定职责权限，这是行文的基本依据。"},{"id":71,"type":"judgment","question":"通告是报告类的上行文种。（ ）","answer":false,"options":null,"explanation":"党政机关应当遵循党政分开的原则，一般不互相行文或交叉行文。党委和政府的公文应分别按各自的系统运行。根据规定，未经授权，党政机关不得互相交叉行文。"},{"id":72,"type":"judgment","question":"总结重在事实，计划是事实与理论并重。（ ）","answer":false,"options":null,"explanation":"《党政机关公文处理工作条例》第十七条规定，同级党政机关、党政机关各部门、上级党政机关部门与下一级党政机关可以联合行文。联合行文应当确有必要，且须明确主办单位。"},{"id":73,"type":"judgment","question":"某县拟向市政府汇报该县遭受水灾的情况可用通报。（ ）","answer":false,"options":null,"explanation":"《党政机关公文处理工作条例》第十三条规定，行文应当确有必要，讲求实效，注重针对性和可操作性。这是为了防止滥发公文、增加不必要的负担，确保公文工作的效率和质量。"},{"id":74,"type":"judgment","question":"加盖印章的规定是上不压正文，下压成文时间。（ ）","answer":true,"options":null,"explanation":"与第67题相同，根据《党政机关公文处理工作条例》第三十一条，经批准公开发布的公文具有与正式印发公文同等的法定效力。这是电子政务条件下提高公文运行效率的重要规定。"},{"id":75,"type":"judgment","question":"上级机关受收到下级机关的请示后，可以不做答复。（ ）","answer":false,"options":null,"explanation":"请示是要求批复的上行文。根据《党政机关公文处理工作条例》，上级机关收到下级机关的请示后，无论是否同意，都应当及时作出批复。不予答复属于失职行为，会妨碍下级机关工作。"},{"id":76,"type":"judgment","question":"公文都应该有主送机关。（ ）","answer":false,"options":null,"explanation":"公文应根据行文目的和内容确定主送机关。主送机关是公文的主要受理机关，应当使用全称或规范化简称、统称。正确标注主送机关是公文格式规范的基本要求。"},{"id":77,"type":"judgment","question":"周密性是计划的最大特点。（ ）","answer":false,"options":null,"explanation":"计划必须具有可行性，即目标切实可达到、措施具体可操作、步骤安排可执行。脱离实际、无法落实的计划只是纸上谈兵，失去了计划的意义。因此，可行性是计划类文书的重要特征。"},{"id":78,"type":"judgment","question":"总结应当用第一人称写作。（ ）","answer":true,"options":null,"explanation":"与第59题相同，总结是自身工作的回顾和反思，应使用第一人称。即使是单位总结，也以'我们'的口吻撰写，从本单位角度出发进行回顾和分析，体现主体的特定性。"},{"id":79,"type":"judgment","question":"需要在首页标注签发人的公文文种包括请示和报告。（ ）","answer":true,"options":null,"explanation":"签发人标注仅适用于上行文（请示、报告等）。纪要属于下行文，其首页应当按照纪要的特定格式编排，不需要标注签发人的职务和姓名。纪要格式与上行文格式不同。"},{"id":80,"type":"judgment","question":"以数字标明段落不是公文结构的突出特点。（ ）","answer":false,"options":null,"explanation":"开门见山正是公文结构的突出特点。公文要求开宗明义，开篇即点明主旨，直接进入正题，不铺垫、不渲染、不绕弯。简洁明了、直奔主题是公文写作区别于文学作品的重要原则。"},{"id":81,"type":"judgment","question":"为减少发文，在向上级机关呈送的报告中，可附带请示问题。（ ）","answer":false,"options":null,"explanation":"与第12、24题相同，根据《党政机关公文处理工作条例》第十五条，报告中不得夹带请示事项。报告和请示是两种不同的文种，功能、处理方式均不同，必须分开行文。"},{"id":82,"type":"judgment","question":"公报适用于向国内外宣布重要事项或者法定事项。（ ）","answer":false,"options":null,"explanation":"行文规则是根据行文关系制定的具体规范，包括行文方向、行文方式、联合行文、抄送规则等。科学合理的行文规则旨在理顺行文关系、减少行文障碍、提高行文效率。"},{"id":83,"type":"judgment","question":"在答复询问报告中，可以同时汇报本机关的最近工作进程。（ ）","answer":false,"options":null,"explanation":"咨询答复报告应紧扣上级询问的事项作答，做到有问必答、答其所问。虽然可以适当介绍相关背景，但不应偏离主题汇报其他工作进展，以免干扰主要问题的答复。"},{"id":84,"type":"judgment","question":"发文机关标志、标题、主送机关、成文日期都是公文主体部分必备的构成要素。（ ）","answer":false,"options":null,"explanation":"发文机关标志（版头）属于版头部分，不属于主体部分。公文主体部分包括标题、主送机关、正文、附件说明、发文机关署名、成文日期、印章等。发文机关标志不是主体要素。"},{"id":85,"type":"judgment","question":"通知是使用范围较广，使用频率较高的上行文。（ ）","answer":false,"options":null,"explanation":"通知是党政机关使用最广泛的公文文种。它适用于发布、传达要求下级执行和有关单位周知的事项，批转、转发公文，任免人员等。使用频率最高，适用范围最广。"},{"id":86,"type":"judgment","question":"通常一份公文只有一个主送机关，防止多头主送。（ ）","answer":true,"options":null,"explanation":"非上行文（如下行文、平行文、周知性公文）可以写多个主送机关或不写主送机关。例如，普发性通知可写多个主送机关，通告、公告则无需写主送机关。上行文才须遵守'一般只写一个主送'的规则。"},{"id":87,"type":"judgment","question":"联合行文时，发文机关标志必须标示所有发文机关的名称。（ ）","answer":false,"options":null,"explanation":"联合行文时，发文机关标志可以并用联合发文机关的名称，各机关名称一般按党、政、军、群的顺序或主办机关在前排列，也可以单独使用主办机关名称。"},{"id":88,"type":"judgment","question":"所有党政公文，都必须注明签发人姓名。（ ）","answer":false,"options":null,"explanation":"《党政机关公文处理工作条例》第九条第六款规定，上行文应当标注签发人姓名。这是为了明确公文责任主体，便于上级机关与下级机关沟通联系，所有上行文均须遵守。"},{"id":89,"type":"judgment","question":"成文日期是公文生效的法定时间，不都是署在公文的文末。（ ）","answer":false,"options":null,"explanation":"成文日期是公文生效的法定时间。会议通过的以通过日期为准，领导人签发的以签发日期为准。根据《党政机关公文格式》，成文日期标注在正文末尾、发文机关署名下方，用阿拉伯数字标注。"},{"id":99,"type":"judgment","question":"情况通报中的情况陈述部分，应予详写，而且是越详细越好，所以可以大量使用描写、抒情等写作手法。（ ）","answer":false,"options":null,"explanation":"公告和通告虽都属于公布性公文，但不能通用。公告面向国内外宣布重要事项或法定事项，适用范围广、内容更重大；通告面向一定范围公布应遵守或周知的事项，范围限定、内容更为具体。"},{"id":91,"type":"judgment","question":"请示应送多个部门，这样会引起上级重视，问题可能解决得快一点。（ ）","answer":false,"options":null,"explanation":"请示必须一文一事，这是《党政机关公文处理工作条例》的明确规定。一文多事会增加上级机关的处理难度，可能因部分事项存疑而导致整个请示被搁置，影响工作效率。"},{"id":92,"type":"judgment","question":"各段落的开头常采用“会议认为” 、“会议提出” 、“会议强调” 、“会议决定”、“会议号召”、 “会议希望”之类用语的是纪要。（ ）","answer":false,"options":null,"explanation":"'关于'是公文标题的标准介词，用于引出事由，是公文标题三要素（发文机关+关于+事由+的+文种）的固定组成部分。不存在'重复'的问题，绝大多数正式公文标题都使用'关于'。"},{"id":93,"type":"judgment","question":"工作计划通常都指明未来一段时期做什么、怎么做、何时做、由谁做等具体问题。（ ）","answer":true,"options":null,"explanation":"制定计划须明确四要素：目标（做什么）、措施（怎么做）、步骤（何时做）、责任人（谁来做）。这四项要素确保计划具有可操作性和可执行性，是计划写作的基本内容要求。"},{"id":94,"type":"judgment","question":"公文如有“附件”，应在正文的下面空 1 行，左空 2 字注明 “附件说明”。（ ）","answer":false,"options":null,"explanation":"附件说明应标注附件的顺序号和名称。同时，如有必要也应当说明附件与正文的关系，例如'附件所列材料随文报送'等，以便收文机关准确理解附件的作用和用途。"},{"id":95,"type":"judgment","question":"联合行文时，版头应列明联合行文的各机关名称，主办单位可放在各联合行文单位最后。（ ）","answer":false,"options":null,"explanation":"联合行文时，主办机关应当排列在前，体现主办责任。标题中的发文机关名称也应按此顺序排列。'主办单位排在最后'的说法是错误的，主办机关必须居前。"},{"id":96,"type":"judgment","question":"涉密公文中绝密、机密公文应当标注份号，秘密公文不需标注份号。（ ）","answer":false,"options":null,"explanation":"涉密公文分为秘密、机密、绝密三级。根据《党政机关公文处理工作条例》规定，绝密级和机密级公文应当标注份号，秘密级公文可以不标注份号。题目表述存在逻辑矛盾。"},{"id":97,"type":"judgment","question":"在文件式格式中，不管是上行文还是下行文，发文字号都在发文机关标识下空 2 行，居中排布。（ ）","answer":false,"options":null,"explanation":"眉首（版头）部分包括公文份数序号（涉密公文标注）、秘密等级和保密期限、紧急程度、发文机关标志、发文字号等要素。发文字号位于发文机关标志下空二行居中排布。"},{"id":98,"type":"judgment","question":"决定和通报行文时，根据不同情形，可以不写主送机关，也可以写 2 个以上主送机关。（ ）","answer":true,"options":null,"explanation":"公告和通告是公布性公文，面向社会公众或一定范围内不特定人员，通常不写主送机关。不写主送机关是二者的格式特点。"},{"id":99,"type":"judgment","question":"决定和通报都可以发布处罚信息，因此，用于处罚时，决定和通报是通用的。（ ）","answer":false,"options":null,"explanation":"公告和通告虽都属于公布性公文，但不能通用。公告面向国内外宣布重要事项或法定事项，适用范围广、内容更重大；通告面向一定范围公布应遵守或周知的事项，范围限定、内容更为具体。"},{"id":100,"type":"judgment","question":"“动态”、“简讯”、“信息”、“内部参考”、“情况交流”都属于简报。（ ）","answer":true,"options":null,"explanation":"简报、动态、信息、资料等属于事务文书，用于内部交流参考，不具备法定公文的效力和规范格式。它们不能作为正式公文对外发布，也不能作为行政管理的法定依据。"},{"id":101,"type":"judgment","question":"总结的主体，一般包括以下内容：基本情况、主要成绩收获、基本经验、存在问题和教 训、今后的打算。（ ）","answer":true,"options":null,"explanation":"总结正文一般包括：基本情况（时间、背景、任务）、主要成绩收获（成果数据）、经验体会（做法认识）、存在问题教训（不足反思）和今后打算（改进方向）。"},{"id":102,"type":"judgment","question":"党政机关公文是具有特定效力和规范体式的文书。（ ）","answer":false,"options":null,"explanation":"《党政机关公文处理工作条例》第三条定义：党政机关公文是党政机关实施领导、履行职能、处理公务的具有特定效力和规范体式的文书，是传达贯彻政策、指导布置工作等的重要工具。"},{"id":104,"type":"judgment","question":"不相隶属机关之间可以联合行文。（ ）","answer":true,"options":null,"explanation":"公文是机关开展工作、处理事务的重要手段，具有领导指导、凭证依据、沟通协调、宣传教育等实际作用。公文写作是机关管理活动的重要组成部分，绝非单纯的文字操作过程。"},{"id":105,"type":"judgment","question":"公文的版记部分包括主题词、抄送机关、印发机关和印发日期等要素。（ ）","answer":false,"options":null,"explanation":"与第65题相同，版记是公文格式的末端部分。根据《党政机关公文格式》规定，版记包括抄送机关、印发机关和印发日期等要素，位于公文的最末页。"},{"id":106,"type":"judgment","question":"“上述要求，请尽快予以批准。”可以作为强调行文目的的结尾用语。（ ）","answer":false,"options":null,"explanation":"'此页无正文'是旧式公文格式用语，用于说明正文已完、该页无正文内容。现行《党政机关公文格式》已不再使用此表述。纪要也不需要以此作为结尾语。"},{"id":107,"type":"judgment","question":"重庆市人民政府办公厅可以发布命令。（ ）","answer":false,"options":null,"explanation":"根据《宪法》和法律规定，命令（令）只能由县级以上人民政府在法定职权范围内发布。政府办公厅（室）不具有发布命令的职权。"},{"id":108,"type":"judgment","question":"通告的发布方式可以在媒体上刊登，也可以公开张贴。（ ）","answer":true,"options":null,"explanation":"与第45题相同，通告是公布性公文，面向社会公众发布。其发布方式灵活多样，既可通过新闻媒体刊载，也可在公共场所张贴公布。"},{"id":109,"type":"judgment","question":"纪要独立直接发文时，需要加盖公章。（ ）","answer":false,"options":null,"explanation":"根据《党政机关公文格式》规定，纪要的格式具有特殊性，不盖印章。纪要不加盖印章是法定格式规范，区别于其他需要加盖印章的公文文种。"},{"id":110,"type":"judgment","question":"总结和计划类似，在成文之前都需要经过充分的准备，成文后还需要进行修正校对。（ ）","answer":true,"options":null,"explanation":"总结和计划的撰写都须经过充分准备（调查研究、收集材料、分析情况）和认真校对，确保内容真实准确、数据可靠、格式规范。"},{"id":111,"type":"judgment","question":"《关于社区服务工作开展情况的调研报告》的标题拟制是正确的。（ ）","answer":true,"options":null,"explanation":"该标题存在文种选用不当的问题。推荐干部应使用函（推荐函）或按权限使用请示。'考察报告'不是法定公文文种。"},{"id":112,"type":"judgment","question":"规则是针对已有的法律、法规等规章制度作出的更加具体的补充。（ ）","answer":false,"options":null,"explanation":"规定是法规性公文，用于对法律、法规和政策进行具体化、细化补充，具有较强的规范性和约束力。"},{"id":113,"type":"judgment","question":"电子公文的存放位置是固定不变的，它只能以一种方式存放在计算机里。（ ）","answer":false,"options":null,"explanation":"电子公文可以存储在多种介质上，如计算机硬盘、移动硬盘、光盘、U盘、云存储等，并非只有计算机中一种存储方式。"},{"id":114,"type":"judgment","question":"按照行文关系划分，申请属于上行文。（ ）","answer":false,"options":null,"explanation":"按行文关系划分，公文应分为上行文、下行文和平行文三类。题目中只列举了上行文和下行文两类，遗漏了平行文。"},{"id":115,"type":"judgment","question":"总结主要解决“做什么”“怎么做”的问题。（ ）","answer":false,"options":null,"explanation":"总结的核心内容是回顾所做的工作，回答'做了什么''怎么做的''结果如何''有何经验教训'等基本问题。"},{"id":116,"type":"judgment","question":"法定公文的成文日期，年份可以根据实际情况简省。（ ）","answer":false,"options":null,"explanation":"成文日期是公文生效的法定时间，必须完整标注年、月、日，使用阿拉伯数字，年份不可省略。"},{"id":117,"type":"judgment","question":"联合行文应该是联合发文机关彼此职权范围内的工作。（ ）","answer":false,"options":null,"explanation":"联合行文时，各发文机关应在各自职权范围内行文，公文内容涉及的事项应是各联合机关共同职责范围内的事务。"},{"id":118,"type":"judgment","question":"公文的法定作者不可以是社会组织的法定领导人。（ ）","answer":false,"options":null,"explanation":"公文的法定作者是依法成立的组织或其法定代表人，实质上是组织而非个人。具体起草者只是代笔人，不构成公文的法定作者。"},{"id":119,"type":"judgment","question":"公文的副本与正本在内容上并无区别，只是作用不同。（ ）","answer":true,"options":null,"explanation":"公文格式包括版面格式（文字排列样式）、用纸格式（纸张规格）和装订格式（装订方式）。三部分均有明确规定。"},{"id":120,"type":"judgment","question":"公文格式各要素划分为版头、主体、版记三部分。（ ）","answer":true,"options":null,"explanation":"根据《党政机关公文格式》（GB/T 9704-2012），公文格式要素划分为版头（眉首）、主体、版记三大部分。"},{"id":121,"type":"judgment","question":"公文中的年份应使用公历年份全称，比如不能把 2023 年写成 23 年。（ ）","answer":true,"options":null,"explanation":"根据公文格式规范，公文中的年份必须使用公元纪年完整数字，不得省略。将'2023年'简写为'23年'不符合规范。"},{"id":122,"type":"judgment","question":"命令是通用文种，任何单位均可以发布命令。（ ）","answer":false,"options":null,"explanation":"前半句正确：公告和通告可以通过媒体发布。后半句错误：命令的发布主体有严格法律限制，并非任何单位都可以。"},{"id":123,"type":"judgment","question":"法定的强制性是规章制度类公文最突出和最基本的共同特点。（ ）","answer":true,"options":null,"explanation":"公文的突出特点是法定作者、法定权威、特定格式和规范处理程序。文学性、针对性等不是公文的本质特征。"},{"id":124,"type":"judgment","question":"公文的起草者也是最终的定稿者。（ ）","answer":false,"options":null,"explanation":"公文的法定作者是依法成立的组织。具体起草者（拟稿人）只是代笔撰写，不代表公文的法定作者。"},{"id":125,"type":"judgment","question":"上级批复下级的请示事项时，可以同意或部分同意，也可以不同意。（ ）","answer":true,"options":null,"explanation":"上级对下级的请示事项，可根据实际情况灵活作出批复：全部同意、部分同意或不同意并阐明理由。"},{"id":126,"type":"judgment","question":"公告和通告行文时，都要写出主送机关。（ ）","answer":false,"options":null,"explanation":"公告和通告是公布性公文，面向社会公众或一定范围内不特定人员，因此不需要标注主送机关。"},{"id":127,"type":"judgment","question":"发文字号由发文机关代字、年份、发文顺序号组成。按照《党政机关公文格式》规定，公文的发文字号应当位于发文机关标志的正下方。（ ）","answer":false,"options":null,"explanation":"发文字号由发文机关代字、年份和发文顺序号组成。年份用六角括号括起，在发文机关标志下空二行居中排布。"},{"id":128,"type":"judgment","question":"向下级机关行文时，党委、政府的办公厅（室）根据上级党委、政府授权，可以向下级党委、政府行文，其他部门和单位不得向下级党委、政府发布指令性公文。（ ）","answer":false,"options":null,"explanation":"党委、政府的办公厅（室）根据本级党委、政府授权，可以向下级党委、政府行文。其他部门未经授权不得发布指令性公文。"},{"id":129,"type":"judgment","question":"命令必须在宪法、法律规定的职权范围内发布，既不得越权发布，又不得滥发命令。（ ）","answer":true,"options":null,"explanation":"各级行政机关发布命令必须在法定职权范围内，既不能超越权限，也不得与宪法和法律相抵触。"},{"id":130,"type":"judgment","question":"纪要的发文形式，可以不加盖公章独立直接发出，也可以通过“报告”、“通知”、“函”的附件形式发布。（ ）","answer":true,"options":null,"explanation":"根据《党政机关公文格式》规定，纪要不加盖印章。可直接印发，也可作为通知的附件印发给相关单位。"},{"id":131,"type":"judgment","question":"决议的人称只有一个，即“会议”，常采用的习惯用语有“会议决定”、“会议同意”、“会议指出”、“会议要求”等。（√）","answer":false,"options":null,"explanation":"公文写作既要注重语言表达，也必须熟练掌握公文格式规范。格式规范是公文法定效力的重要保障。"},{"id":133,"type":"judgment","question":"公文在签发时，字迹要清晰、易认，签字要署全名，不省略姓氏，不用笔名、化名，同时要注意署上签发日期。若圈阅，则视为同意，圈阅公文也应当注明圈阅时间。（ ）","answer":true,"options":null,"explanation":"签发是公文生效的关键环节。签名应工整清晰、姓名齐全，要写清签发时间。圈阅视为同意，圈阅者应注明日期。"},{"id":134,"type":"judgment","question":"公文被撤销的，视为自始无效；公文被废止的，视为自废止之日起失效。（ ）","answer":true,"options":null,"explanation":"根据《党政机关公文处理工作条例》第三十三条规定，公文被撤销的视为自始无效；公文被废止的视为自废止之日起失效。"}],"singles":[{"id":1,"type":"single","question":"下列哪个不是党政公文法定性的具体体现？（ ）","answer":"D","options":{"A":"有法定的作者","B":"有法定的效力","C":"有法定的权威","D":""},"explanation":"党政公文的法定性体现在有法定的作者、法定的效力和法定的权威三个方面。有法定的写法不属于法定性的体现，因为公文的确有规范格式，但这属于规范性而非法定性范畴。"},{"id":2,"type":"single","question":"下列单位之间关系属于领导与被领导关系的是（ ）。","answer":"B","options":{"A":"公安部治安管理局、某市治安管理总队","B":"","C":"重庆市公安局、重庆市教委","D":"重庆市公安局、重庆工商大学"},"explanation":"重庆市人民政府是地方行政机关，重庆市公安局是其下属职能部门，二者之间存在明确的领导与被领导关系。其他选项中的单位之间均不存在直接的领导与被领导关系。"},{"id":3,"type":"single","question":"下列单位之间关系属于指导与被指导关系的是（ ）。","answer":"A","options":{"A":"","B":"重庆市教委、沙坪坝区公安分局","C":"重庆市人民政府、沙坪坝区公安分局","D":"重庆市人民政府办公厅、沙坪坝区人民政府"},"explanation":"在公安系统中，上级公安机关对下级公安机关在业务上属于指导与被指导关系，而非领导关系，因为地方公安机关同时受地方政府领导。重庆市公安局对某区公安分局正是这种指导关系。"},{"id":4,"type":"single","question":"下列选项属于不相隶属关系的是（ ）。","answer":"B","options":{"A":"教育部、重庆大学","B":"","C":"教育部、公安部","D":"市局情报总队、各分局情报支队"},"explanation":"不相隶属关系指既不是同一系统、也没有领导指导关系的机关之间的关系。重庆市公安局和沙坪坝区公安分局属于同一系统且有业务指导关系，但不属于严格意义上的不相隶属。此题选B。"},{"id":5,"type":"single","question":"同级机关或者不相隶属的，没有领导与指导关系的机关之间的行文关系为（ ）。","answer":"B","options":{"A":"上行文","B":"","C":"下行文"},"explanation":"行文关系根据隶属关系和职权范围确定。同级机关或不相隶属机关之间没有领导与被领导关系，因此它们之间的行文属于平行文关系，应使用函、平行通知等文种。"},{"id":6,"type":"single","question":"下列文种中，适用于向上级机关汇报工作、反映情况、答复上级机关询问的是（ ）。","answer":"C","options":{"A":"请示","B":"批复","C":"","D":"通知"},"explanation":"《党政机关公文处理工作条例》规定，报告适用于向上级机关汇报工作、反映情况，回复上级机关的询问。请示用于请求指示批准，函用于不相隶属机关，意见用于提出见解和处理办法。"},{"id":7,"type":"single","question":"下列公文中文种使用正确的是（ ）。","answer":"D","options":{"A":"中共某区委 2023 年工作要点","B":"某市经委关于深化企业内部改革的思路","C":"重庆警察学院关于增加伙食经费的申请","D":""},"explanation":"D选项中使用通报表彰先进事迹正确。A缺文种，B'思路'不是法定公文文种，C请示标题中'请示'与'请求'语义重复。D项'关于表彰...的通报'文种使用规范。"},{"id":8,"type":"single","question":"党政公文的特点不包括（ ）。","answer":"D","options":{"A":"政治性","B":"法定性","C":"时效性","D":""},"explanation":"党政公文具有法定性、权威性和规范性等特点，由法定作者制发，具有行政约束力，体式规范。但公文是实用性文书，不追求艺术内涵，故D不属于公文特点。"},{"id":9,"type":"single","question":"公文的作者是指（ ）。","answer":"B","options":{"A":"草拟公文的执笔人","B":"","C":"党政机关、社会团体、企事业单位的领导人","D":"国务院"},"explanation":"公文的作者是法定的，指依法成立并能以自己的名义行使职权和承担义务的机关或组织，而不是起草公文的个人。公文起草者是拟稿人，但作者是机关法人。"},{"id":10,"type":"single","question":"和不相隶属的机关联系工作问题时，应使用下列哪一种文种（ ）。","answer":"A","options":{"A":"","B":"决定","C":"通知","D":"批复"},"explanation":"函适用于不相隶属机关之间商洽工作、询问和答复问题、请求批准和答复审批事项。与不相隶属的机关联系工作，函是最合适的文种。请示用于向上级，意见和议案各有专有用途。"},{"id":11,"type":"single","question":"下列文种中符合规范的是（ ）。","answer":"C","options":{"A":"《某市经委关于深化企业内部改革的思路》","B":"《某县人民政府关于即将出台部分改革政策的吹风》","C":"","D":"《某公司关于要求减免部分工商税的请求》"},"explanation":"C标题合规，'关于增拨水处理费用的请示'事由清楚、文种正确。A缺文种，B'立即停止审批'与'出台'语义矛盾且标题过长，D缺文种。"},{"id":12,"type":"single","question":"党政机关公文按行文关系分为（ ）。","answer":"B","options":{"A":"逐级行文 多级行文 越级行文","B":"","C":"逐级行文 多级行文 超级行文","D":"超级行文 下行文 平行文"},"explanation":"按行文关系划分，党政机关公文分为上行文（下级向上级）、下行文（上级向下级）和平行文（同级或不相隶属之间）。其他选项是行文方式的分类而非行文关系的分类。"},{"id":13,"type":"single","question":"下列选项中，不适用于公文的表达方式的是（ ）。","answer":"D","options":{"A":"叙述","B":"说明","C":"议论","D":""},"explanation":"公文是实用文体，表达方式以叙述、说明和议论为主，用于陈述事实、解释说明和论证道理。抒情是文学性表达方式，公文一般不使用。"},{"id":14,"type":"single","question":"联合行文时确定成文时间的标准是（ ）。","answer":"B","options":{"A":"以第一个签发机关负责人签发的日期为准","B":"","C":"以文件撰写的日期为准","D":"以文件实际发出的日期为准"},"explanation":"《党政机关公文处理工作条例》规定，联合行文时，成文日期以最后一个签发机关负责人签发的日期为准。这体现了联合行文中各单位的平等地位和协商一致原则。"},{"id":15,"type":"single","question":"公文标题由三个部分组成，其中（ ）不可省略。","answer":"B","options":{"A":"发文机关名称","B":"","C":"事由","D":"落款"},"explanation":"公文标题三要素为发文机关、事由和文种。文种是必需的，不能省略；发文机关和事由在特定情况下可以省略，如印有发文机关标志的公文可省略发文机关。"},{"id":16,"type":"single","question":"机关单位下发新的考勤制度条例，使用通知的类型属于（ ）。","answer":"B","options":{"A":"事务性通知","B":"","C":"批转（转发）性通知","D":"指示性通知"},"explanation":"颁布性通知用于发布规章制度、管理办法等文件。某下属单位向下发放新的管理制度，是将制度规范颁布给下级执行，属于颁布性通知。"},{"id":17,"type":"single","question":"针对社区治安案件不断上升，某公安分局制定“秋冬行动”进行专项整顿，下发文件应使用（ ）。","answer":"B","options":{"A":"发布性通知","B":"","C":"事务性通知","D":"批转（转发）性通知"},"explanation":"通知适用于发布、传达要求下级机关执行和有关单位周知或执行的事项。部署秋冬安全专项整治行动属于布置工作，用通知最恰当。决定用于重要事项决策。"},{"id":18,"type":"single","question":"批转性通知用于批转（ ）的公文。","answer":"C","options":{"A":"上级机关","B":"同级机关","C":"","D":"不相隶属机关"},"explanation":"批转通知是上级机关批转下级机关的公文，将下级来文加上批语转发给所属单位执行。关键词'批'体现了上级对下级文件的审批和转发。"},{"id":19,"type":"single","question":"法定公文一共有多少种？（ ） A 14 B 16 C 15 D 18","answer":"C","options":{"C":""},"explanation":"根据《党政机关公文处理工作条例》，法定公文共15种：决议、决定、命令（令）、公报、公告、通告、意见、通知、通报、报告、请示、批复、议案、函、纪要。"},{"id":20,"type":"single","question":"公文一般由（ ）个要素组成。 A 17 B 15 C 18 D 19","answer":"C","options":{"C":""},"explanation":"根据《党政机关公文格式》国家标准（GB/T 9704-2012），公文一般由18个要素组成，包括份号、密级、紧急程度、发文机关标志、发文字号、签发人、标题、主送机关、正文等。"},{"id":21,"type":"single","question":"公文标题三要素：发文机关名称、事由、文种，哪个不能省略？（ ）","answer":"C","options":{"A":"发文机关名称","B":"事由","C":""},"explanation":"公文标题三要素中，文种是核心要素，不可省略。发文机关在印有发文机关标志时可省略，事由在内容极为简单时也可省略。但文种任何时候都不能省略。"},{"id":22,"type":"single","question":"中央下发《党政机关公文处理工作条例》，应使用的通知类型为（ ）。","answer":"B","options":{"A":"指示性通知","B":"","C":"事项性通知","D":"转发性通知"},"explanation":"事务性通知用于传达要求下级机关办理或需要有关单位周知或执行的事项。国务院下发《党政机关公文处理工作条例》属于传达重要事务，用事务性通知。"},{"id":23,"type":"single","question":"人事任免的通知类型属于（ ）。","answer":"C","options":{"A":"发布性通知","B":"指示性通知","C":"","D":"转发（批转）性通知"},"explanation":"事务性通知适用于任免人员、设置机构、启用印章等日常事务性工作。任免和聘用干部属于机关日常人事事务，因此归入事务性通知。"},{"id":24,"type":"single","question":"下列结语中，可用于请批性建议意见的是（ ）。","answer":"C","options":{"A":"以上意见供领导决策参考","B":"以上意见，请结合实际情况贯彻执行","C":"","D":"以上意见请审阅"},"explanation":"越级行文有严格限制，只有在特殊紧急情况、多次请示未获答复、检举上级等法定情形下才能使用。'为供领导决策参考'不属于法定越级行文的情形。"},{"id":25,"type":"single","question":"某省税务局要开展年度税务登记验证和一般纳税人年审工作，要将此事告知社会，宜用（ ）。","answer":"C","options":{"A":"通报","B":"通知","C":"","D":"公告"},"explanation":"通告适用于在一定范围内公布应当遵守或者周知的事项。纳税登记验证需告知社会公众，但范围限于辖区纳税人和相关公众，属于一定范围，故用通告。"},{"id":26,"type":"single","question":"意见适用于对重要问题提出见解和处理办法。在其正文的主体事项部分要对问题的见解或处理办法具体明确地表达出来。由此可见其特点为（ ）。","answer":"B","options":{"A":"具有指令性","B":"","C":"具有强制性","D":"具有广泛性"},"explanation":"通告适用于在一定范围内公布应当遵守或周知的事项。禁止燃放烟花爆竹涉及市区范围内公众遵守的事项，用通告最合适。公告向国内外宣布重大事项，范围过大。"},{"id":27,"type":"single","question":"在下列选项中，不宜发布命令性文件的单位或个人是（ ）。","answer":"C","options":{"A":"中华人民共和国主席","B":"全国人民代表大会常务委员会委员长","C":"","D":"某县人民政府"},"explanation":"命令（令）属于发布性公文，适用于公布行政法规和规章、宣布施行重大强制性措施、嘉奖有关单位和人员。其核心功能之一是发布法规，具有发布性特征。"},{"id":28,"type":"single","question":"在案件侦办过程中，遇到重要问题有必要向上级汇报，应使用报告中的哪一类（ ）。","answer":"D","options":{"A":"专题报告","B":"答复报告","C":"工作报告","D":""},"explanation":"命令（令）适用于公布行政法规和规章。根据相关法律规定，行政法规和规章须由国家主席令或国务院令等形式发布，命令是法定发布载体。"},{"id":29,"type":"single","question":"按照报告内容涉及的范围，《政府工作报告》是（ ）。","answer":"C","options":{"A":"答复报告","B":"专题报告","C":"","D":"情况报告"},"explanation":"公告适用于向国内外宣布重要事项或者法定事项。其特点是周知范围最广（国内外）、事项重大。通告范围较小，公报侧重公布重要决定事项，通知用于内部行文。"},{"id":30,"type":"single","question":"关于报告，说法错误的是（ ）。","answer":"B","options":{"A":"报告可以分为工作报告、情况报告和答复报告","B":"","C":"报告与请求不能结合使用，在报告中不得夹带请求事项","D":"报告是下级机关向上级机关反馈信息，沟通上下级机关纵向联系的一种重要形式，因此，各机关经常使用"},"explanation":"周知性公文指需要让公众或一定范围知晓的公文，包括公告、通告、通报等。指示不属于周知性公文，它是对下级布置工作的指导性公文，有指令约束性。"},{"id":31,"type":"single","question":"请示与报告的根本性区别是（ ）。","answer":"C","options":{"A":"行文方式不同","B":"行文时间不同","C":"","D":"报送制度不同"},"explanation":"批复开头应完整引用下级来文，规范格式为：你局《关于...的请示》（发文字号）收悉。D选项完整引用了标题和发文字号，最规范。C缺少书名号中的标题内容。"},{"id":32,"type":"single","question":"议案的适用范围有哪些？（ ）。","answer":"D","options":{"A":"适用于会议讨论通过的重大决策事项","B":"适用于各级人民政府按照法律程序向上级人民代表大会或者人民代表大会常务委员会机关提请审议事项","C":"适用于记载会议主要情况和议定事项","D":""},"explanation":"批复是专门用于答复下级机关请示事项的下行文。其行文具有被动性——有请示才有批复。意见提出建议，决定作决策，函用于平行。"},{"id":33,"type":"single","question":"“你单位某年某月来函收悉”是（ ）的开头。","answer":"D","options":{"A":"商洽函","B":"去函","C":"批复","D":""},"explanation":"通报适用于表彰先进、批评错误、传达重要精神和告知重要情况。这是通报区别于其他文种的独特功能。通知用于部署工作，通告用于公布事项，公告用于宣布重大事项。"},{"id":34,"type":"single","question":"下列不属于函的结束语的一项是（ ）。","answer":"D","options":{"A":"特此函复","B":"此复","C":"盼复","D":""},"explanation":"标题中的'考察报告'提示这是报告类公文。报告适用于向上级机关汇报工作、反映情况。该文种为报告而非通报。"},{"id":35,"type":"single","question":"下列适用范围，属于纪要的是（ ）。","answer":"C","options":{"A":"适用于各级人民政府按照法律程序向同级人民代表大会或者人民代表大会常务委员会提请审议事项","B":"适用于传达会议主要情况和议定事项","C":"","D":"逐项记录会议流程和细节，形成会议第一手材料"},"explanation":"地方各级人民政府在非法定职权范围内的事项，需事先向上级请示，经同意后方可向下级行文。这是行文规则的要求，确保公文合法性和权威性。"},{"id":36,"type":"single","question":"某分局在春节安保中做出了较大贡献 , 市公安局准备对该单位和相关人员进行奖励 , 适用的公文文种是（ ）。","answer":"B","options":{"A":"命令 ( 令 )","B":"","C":"决定","D":"通知"},"explanation":"纪要（会议纪要）适用于记载会议主要情况和议定事项。决定和决议有决策功能但不特指会议，会议记录不是法定公文文种。"},{"id":37,"type":"single","question":"某市教育局向市规划局请求批准本单位建设规划 , 应使用的文种是（ ）。","answer":"D","options":{"A":"规划","B":"报告","C":"请示","D":""},"explanation":"《党政机关公文处理工作条例》规定的15个文种中不包括'条例'。条例属于法规文体，不是法定公文文种。决议、公报、议案都是法定文种。"},{"id":38,"type":"single","question":"市区某电力公司因故检修 , 需停电半天。可选择使用什么文种告知市民？（ ）","answer":"D","options":{"A":"通知","B":"公告","C":"启示","D":""},"explanation":"上行文应当标注签发人姓名。这是为了明确责任，便于上级机关了解公文由谁签发负责。下行文和平行文不要求标注签发人。"},{"id":39,"type":"single","question":"“接受请示的机关应对请示事项表明是否批准的态度或予以明确的指示”这句话，反映了请示（ ）特性。","answer":"D","options":{"A":"被动性","B":"针对性","C":"强制约束作用，要求下级机关必须遵守与执行","D":""},"explanation":"通告适用于在一定范围内公布应当遵守或周知的事项。停止使用身份证涉及社会公众周知和执行，属于一定范围内的事项，用通告。"},{"id":40,"type":"single","question":"上级机关就某学院开学收费事项进行询问，该单位答复时应使用（ ）。","answer":"D","options":{"A":"通报","B":"请示","C":"意见","D":""},"explanation":"通知适用于发布、传达要求下级机关执行和有关单位周知或执行的事项。派出所对张某进行强制戒毒，是将决定通知当事人和有关部门执行，用通知。"},{"id":41,"type":"single","question":"下列复函引语符合规范要求的是（ ）。","answer":"C","options":{"A":"你局来文收悉","B":"你局上月报来的函收悉","C":"","D":"你单位××〔 2020 〕×号《关于×××的函》已收悉"},"explanation":"请示适用于向上级机关请求指示、批准。公安局提请市政法委批准录用民警，是向上级请求批准，应用请示。报告用于汇报，函用于不相隶属。"},{"id":42,"type":"single","question":"简报是一种比较古老的文体，它的起源可以追溯到（ ）。","answer":"C","options":{"A":"宋代","B":"秦代","C":"","D":"唐代"},"explanation":"联合行文的单位须级别对等。重庆市教委和重庆市公安局（均为厅级）同级可联合行文；公安局和工商大学平级可联合；市政府和市委同级别可联合。以上均可。"},{"id":43,"type":"single","question":"把工作或过程分成几个阶段，分别说明是每个阶段的成绩、经验和教训的方法适用于（ ） 。","answer":"C","options":{"A":"大型的综合性总结","B":"内容比较单一的总结","C":"","D":"对比性总结"},"explanation":"通知用于传达要求下级机关执行的事项。法规从颁发到执行需要过渡期进行普法教育，用通知传达执行要求并告知过渡安排最为合适。"},{"id":44,"type":"single","question":"写总结的主要目的是（ ）。","answer":"A","options":{"A":"","B":"回顾工作经验，树立今后工作的信心","C":"找出工作问题，以利于解决存在的问题","D":"详细记载工作历程，存档备查"},"explanation":"函适用于同级或不相隶属机关之间商洽工作、询问和答复问题。同级机关之间相互商洽工作应使用函，这是函的核心用途之一。"},{"id":45,"type":"single","question":"下列文种不属于法定公文的是（ ）。","answer":"D","options":{"A":"通知","B":"纪要","C":"通报","D":""},"explanation":"公文的成文日期即公文生效的法定时间，是公文开始具有法定效力的时间节点。通常以机关领导人签发日期为准，但本质上是公文生效的法定时间。"},{"id":46,"type":"single","question":"在公文标题的要素中，哪个要素不能省略？（ ）","answer":"C","options":{"A":"发文机关名称","B":"事由","C":"","D":"成文时间"},"explanation":"调查报告是以事件为中心，叙述报道事实真相，揭露问题，反映新情况、新经验的文种。它通过调查获得材料，以叙述为主兼有议论和说明。"},{"id":47,"type":"single","question":"适用于在一定范围内公布应当遵守或者周知的事项。","answer":"C","options":{"A":"通知","B":"通告","C":"","D":"公报"},"explanation":"C选项'批转...关于...的意见'中，'批转'含介词'批'的转义，'关于'是介词，结构层次最多。D'转发...关于...的意见'次之。A和B结构较简单。"},{"id":48,"type":"single","question":"适用于表彰先进、批评错误、传达重要精神和告知重要情况。","answer":"D","options":{"A":"决定","B":"报告","C":"通知","D":""},"explanation":"公文正文的起草者在公文处理中常被称为'拟稿人'。撰稿人是泛称，作者指发文机关，审批人是审核批准者。拟稿人是公文处理流程中的规范称谓。"},{"id":49,"type":"single","question":"公文标题应当使用的字体字号是（ ）。","answer":"B","options":{"A":"方正仿宋，三号","B":"","C":"方正黑体，二号","D":"方正楷体，三号"},"explanation":"公文是实用性文书，表达方式以叙述、说明和议论为主。描写和抒情属于文学性表达方式，在公文中一般不采用，以保持公文的庄重、客观、准确。"},{"id":50,"type":"single","question":"版记中的印发机关是指（ ）。","answer":"B","options":{"A":"受理公文的机关","B":"","C":"公文印刷情况的说明","D":"制发机关与收文机关"},"explanation":"根据《党政机关公文格式》规定，密级和保密期限之间用★隔开，如'机密★1年'。这是公文格式的国家标准要求。"},{"id":51,"type":"single","question":"下面不是公文的特定格式的是（ ）。","answer":"D","options":{"A":"信函格式","B":"命令（令）格式","C":"纪要格式","D":""},"explanation":"公文中表示百分比、比例等，应统一使用阿拉伯数字加百分号的形式，即'30%'，不混用汉字和数字，同一公文中格式应保持一致。"},{"id":52,"type":"single","question":"××省教育厅将《××省教育厅关于加强大学生心理危机识别和干预工作的紧急通知》以通知的形式发给相关下级单位，这一通知属于（ ）。","answer":"C","options":{"A":"普发类通知","B":"转发类通知","C":"","D":"批转类通知"},"explanation":"《党政机关公文格式》规定了三种特定格式：信函格式、命令（令）格式、纪要格式。意见格式不属于特定格式，按一般公文格式处理。"},{"id":53,"type":"single","question":"下列公文标题表述准确的是（ ）。","answer":"D","options":{"A":"××医院关于要求改变拨款方式的报告","B":"××省财政厅关于同意××大学新建教学楼的批示","C":"××大学关于举行春季运动会决定的通知","D":""},"explanation":"公文用纸的主要技术指标包括定量（克重）、平滑度、耐折度等物理指标，确保纸张质量适合公文印制和长期保存。颜色不属于主要技术指标。"},{"id":54,"type":"single","question":"可用于人事任免的公文有（ ）。","answer":"A","options":{"A":"","B":"意见","C":"决定","D":"批复"},"explanation":"《党政机关公文处理工作条例》规定，各级党政机关应当建立健全本机关公文处理工作制度，由办公厅（室）和专人共同管理，确保公文处理规范有序。"},{"id":55,"type":"single","question":"函灵活简便，可广泛应用于联系各个领域，以下事项适用函（ ）。","answer":"B","options":{"A":"××市人民政府向××省人民政府发文请求拨给××发电厂建设经费","B":"","C":"××市公安局就打击车匪路霸问题向省公安厅提出建议","D":"最高人民法院就事业单位人事争议仲裁时效如何计算回复四川省高级人民法院"},"explanation":"通告适用于在一定范围内公布应当遵守或者周知的事项。办公室更改电话号码需要告知相关人员，属于在一定范围内周知的事项，应用通告。"},{"id":56,"type":"single","question":"党政公文中的意见，可以作为（ ）来使用。","answer":"D","options":{"A":"上行文","B":"下行文","C":"平行文","D":""},"explanation":"批复是为答复下级机关请示事项而制发的公文，具有被动性——先有请示才有批复。没有请示就没有批复。"},{"id":57,"type":"single","question":"答复上级机关的询问，应当使用的公文文种是（ ）。","answer":"B","options":{"A":"通报","B":"","C":"意见","D":"函"},"explanation":"公告的结尾用语通常为'现予公告'或'特此公告'。D选项'现予公告'是公告正文结尾的常用规范用语。其他选项分别对应其他文种。"},{"id":58,"type":"single","question":"下列哪些事项不属于纪要的正文部分（ ）。","answer":"A","options":{"A":"","B":"会议的基本情况","C":"会议的希望、要求或发出号召","D":"会议讨论与决定的问题"},"explanation":"处置办理重大突发事件时，公文处理应遵循'尽快处理，减少环节'的原则，以提高效率争取时间。这是应急处置的特殊要求，可适当简化程序。"},{"id":59,"type":"single","question":"对社会现象进行深入调查研究之后，将其结果写成一份公文，应该用（ ）。","answer":"C","options":{"A":"计划","B":"总结","C":"","D":"简报"},"explanation":"批复适用于答复下级机关请示事项。当上级机关需要对下级反映的重大问题作出答复和指示时，用批复。其他文种不专门用于答复问题。"},{"id":60,"type":"single","question":"下列属于公文的版头部分的要素是（ ）。","answer":"B","options":{"A":"正文","B":"","C":"标题","D":"附注"},"explanation":"'以上意见，如无不妥，请批转各地区、各部门贯彻执行'是意见文种的典型结尾用语。意见通常需要相关部门执行，用批转方式扩大执行范围。"},{"id":61,"type":"single","question":"为了提高办事效率，主送机关只能够是（ ）。","answer":"D","options":{"A":"自己的直接上级机关","B":"受双重领导的两个上级机关","C":"自己的隶属下级机关","D":""},"explanation":"'关于保护和改善环境的若干规定'标题中未使用'发布''批转''转发'等动词，直接以'关于'引出规定内容，属于发布性公文标题。"},{"id":62,"type":"single","question":"下列标题只有一项与其他三项不同。这一项是（ ）。","answer":"D","options":{"A":"国务院办公厅关于××省××市××县擅自停课组织中小学生参加迎送活动的通报","B":"国务院办公厅关于部分地区违反国家棉花购销政策的通报 C 2021 年公积金管理情况通报","D":""},"explanation":"纪要不加盖发文机关印章。根据《党政机关公文处理工作条例》，纪要的格式有特定要求，可不加盖印章。通知、决定、请示均需加盖印章。"},{"id":63,"type":"single","question":"以下事项适用通告行文的是（ ）。","answer":"A","options":{"A":"","B":"××教育局告知相关学校参加××会议","C":"××总公司向下属单位告知李×违反劳动纪律造成重大火灾事故的情况","D":"××大学告知校运会的具体安排"},"explanation":"在公文写作中，'一切'常用于代替'从0到9'或'所有'的概念，表示全部涵盖。它比'所有''全部''一概'更正式、更常用于公文。"},{"id":64,"type":"single","question":"××区政府向市政府请求批准办理某件事用（ ）。","answer":"C","options":{"A":"报告","B":"函","C":"","D":"意见"},"explanation":"公文生效标识是机关印章，加盖印章是公文生效的标志。A附件标注在正文下空一行。B纪要不需要加盖印章。D联合行文各单位均需加盖印章。"},{"id":65,"type":"single","question":"下列机关不可以联合行文的是（ ）。","answer":"D","options":{"A":"广州市政府、深圳市政府","B":"广东省政府、中共广东省省委","C":"广州市公安局、广州市民政局","D":""},"explanation":"通告和公告的主要区别在于适用范围：通告在一定范围内公布事项，受文对象有特定范围；公告面向国内外，受文范围更广泛。"},{"id":66,"type":"single","question":"不可以用于嘉奖有关单位与人员的公文文种为（ ）。","answer":"C","options":{"A":"命令","B":"决定","C":"","D":"通报"},"explanation":"会议纪要在行文关系上通常被视为平行文，可平行发送给相关单位，也可作为下行文印发。但根据主要功能，纪要属于平行文。"},{"id":67,"type":"single","question":"在公文中引用文件的方式是（ ）。","answer":"C","options":{"A":"只引标题","B":"只引发文字号","C":"","D":"先引发文字号，后引标题"},"explanation":"根据《党政机关公文格式》，公文页码采用单页码居右空一字、双页码居左空一字的形式，以便于阅读和装订。"},{"id":68,"type":"single","question":"在写作中，主要按为什么做、做什么、怎么做的步骤来安排内容的文书是（ ）。","answer":"C","options":{"A":"讲话稿","B":"简报","C":"","D":"总结"},"explanation":"公文的成文日期通常以机关领导人签发日期为准。会议通过的决定、决议以通过日期为准，联合行文以最后签发日期为准。"},{"id":69,"type":"single","question":"下列不属于法定公文的是（ ）。","answer":"B","options":{"A":"纪要","B":"","C":"公报","D":"决定"},"explanation":"通告、通知、报告都有较强的时效性，需要在一定时间内发挥作用。通报同样具有时效性。但本题答案为D，按题目给定答案执行。"},{"id":70,"type":"single","question":"公安部向重庆市教委发送的文件属于（ ）。","answer":"B","options":{"A":"上行文","B":"","C":"下行文","D":"超级行文"},"explanation":"A选项正确，《条例》规定两个以上机关可联合行文。B错误纪要不盖印章。C错误公文公布不一定立即生效。D错误工作报告不是指示。"},{"id":71,"type":"single","question":"某市公安局向该市人事局去文询问人事事宜应该用（ ）。","answer":"C","options":{"A":"请示","B":"报告","C":"","D":"意见"},"explanation":"调查报告以叙述和说明为主要表达方式，兼有议论。通过叙述调查事实、说明调查情况，并在分析基础上进行必要议论，得出结论和建议。"},{"id":72,"type":"single","question":"重庆市公安局拟发文严禁赌博活动，该适用以下哪一种公文？（ ）","answer":"C","options":{"A":"命令","B":"通知","C":"","D":"公告"},"explanation":"夹叙夹议是调查报告最常用的表达方法，即在叙述调查事实的同时加以分析和议论，使材料与观点有机结合，增强报告的说服力。"},{"id":73,"type":"single","question":"重庆市公安局 2023 年下发序号为 7 号的公文发文字号，正确写法是（ ）。","answer":"D","options":{"A":"渝公发（ 2023 ）第 7 号","B":"渝公发［ 2023 ］ 7 号","C":"渝公发［ 2023 ］ 007 号","D":""},"explanation":"规定是用于对特定范围内的工作和事务制定具有约束力的行为规范的文种。民政部制定《事业单位登记管理暂行条例》属于制定规范，应用'规定'。"},{"id":74,"type":"single","question":"总结的写作一般使用（ ）。","answer":"A","options":{"A":"","B":"第二人称","C":"第三人称","D":"以上三者皆可"},"explanation":"《党政机关公文格式》规定，公文用纸一般采用A4型纸（210mm×297mm），这是国家标准要求。其他规格均不符合现行规定。"},{"id":75,"type":"single","question":"合理安排正文的结构，使层次清楚，条分缕析，言之有序，是为了（ ）。","answer":"A","options":{"A":"","B":"不事曲笔","C":"突出特色","D":"撰文要求"},"explanation":"函是典型的平行文，适用于不相隶属机关之间商洽工作、询问和答复问题、请求批准和答复审批事项。"},{"id":76,"type":"single","question":"公文与文学作品不同，它要求文件内容必须（ ）。","answer":"B","options":{"A":"提出问题","B":"","C":"介绍经过","D":"沟通信息"},"explanation":"公文的成文日期使用小写汉字数字（汉字数字），如'二〇二三年一月一日'。根据《党政机关公文格式》规定，成文日期用汉字数字标注。"},{"id":77,"type":"single","question":"根据公文作用的活动领域，公文可分为（ ）。","answer":"B","options":{"A":"上行文、 下行文、 平行文","B":"","C":"规范性公文、领导指导性公文、公布性公文、陈述呈请性公文、商洽性公文、证明性公文","D":"收文、发文"},"explanation":"批复是上级答复下级请示的下行文。报告、请示是上行文，函是平行文。批复具有下行文性质和针对性。"},{"id":78,"type":"single","question":"公文应在（ ）装订。","answer":"A","options":{"A":"","B":"右侧","C":"上面白边区","D":"下面白边区"},"explanation":"主送机关是公文的主要受理机关，即公文要求其办理或答复的单位。抄送机关是需了解内容但不需办理的单位。"},{"id":79,"type":"single","question":"公文的主体部分称为（ ）。","answer":"B","options":{"A":"标题","B":"","C":"作者","D":"印章或签署"},"explanation":"报告是上行文，用于向上级机关汇报工作、反映情况。函是平行文，通报和决定是下行文。"},{"id":80,"type":"single","question":"根据内容涉及国家秘密的程度，含有重要的国家秘密，泄露会使国家的安全和利益遭受严重损害的文件属于（ ）。","answer":"C","options":{"A":"内部使用文件","B":"秘密文件","C":"","D":"绝密文件"},"explanation":"西安市公安局属于行政机关，建设银行西安分行属于金融企业，二者互不隶属、无领导指导关系，属于不相隶属关系。"},{"id":81,"type":"single","question":"国家民政部与各省、 直辖市、 自治区民政厅、 局之间属于（ ）。","answer":"A","options":{"A":"","B":"属关系","C":"相隶属关系","D":"行关系"},"explanation":"成文日期是公文生效的法定时间，是公文开始具有法定约束力的时间点。一般以机关领导人签发日期为准。"},{"id":82,"type":"single","question":"公文中兼用的基本表达方式是 ( ) 。","answer":"C","options":{"A":"议论、描写、 说明","B":"议论、抒情、 说明","C":"","D":"叙述、抒情、 说明"},"explanation":"批转、转发的文件名称本身是标题，在公文标题中作为标题的一部分出现时，不应再加标点符号，避免标点混淆和格式不规范。"},{"id":83,"type":"single","question":"公文的标题一般由哪些要项组成（ ）。","answer":"D","options":{"A":"版头、发文字号","B":"抄送机关、版头、 主题词","C":"份号、密级标志、 主题词","D":""},"explanation":"请示应当一文一事，不得一文多事。D选项同时申请经费、增拨物资和改建宿舍，涉及多项不同事项，违反了一文一事原则。"},{"id":84,"type":"single","question":"公文版头的作用是（ ）。","answer":"D","options":{"A":"醒目、严肃","B":"公文作者法定的权威性","C":"公文要求的必要标记","D":""},"explanation":"公文处理工作的作用包括依据凭证作用（记录和凭据）、联系沟通作用（上下左右的沟通）以及领导和指导、行为规范、宣传教育等。"},{"id":85,"type":"single","question":"以下指导性公文应当具有稳定性，不能轻易更改的是（ ）。","answer":"A","options":{"A":"","B":"批复","C":"通知","D":"通告"},"explanation":"公文中数字的使用：年份一律用阿拉伯数字（如2023年），其他数字视具体情况而定，如成文日期用汉字、表达数量时用阿拉伯数字等。"},{"id":86,"type":"single","question":"以下说法不正确的是（ ）。","answer":"A","options":{"A":"","B":"批复具有专业性，一般由专业主管部门在一定业务范围内发布","C":"决定的正文部分由制发决定的根据、执行要求、结尾三大部分组成","D":"通知的标题由发文机关名称、事由、文种组成"},"explanation":"公文用纸采用A4型纸，幅面尺寸为210mm*297mm，这是国际标准A4纸的尺寸，也是《党政机关公文格式》的规定。"},{"id":87,"type":"single","question":"以下说法错误的是（ ）。","answer":"D","options":{"A":"指示具有强制约束作用要求下级机关必须遵守和执行","B":"决定具有指导性， 具有较强的理论性和政策性是指导工作的准则","C":"任免通知落款处由任免机关领导人亲笔签署（或代以签名章）","D":""},"explanation":"根据《党政机关公文格式》规定，公文正文每行排28个字。这是版心尺寸和字号关系确定的排版标准。"},{"id":88,"type":"single","question":"批复不具有以下哪一特点（ ）。","answer":"B","options":{"A":"法定的权威性与执行性","B":"","C":"被动性","D":"针对性"},"explanation":"摘编公文的目的是为上级领导提供信息、为公文贯彻执行作准备、便于公文的执行。重新编写公文不是摘编的目的。"},{"id":89,"type":"single","question":"撰写《关于审批第三批国家历史文化名城和加强保护管理的请示》一文时，符合撰写要求的说法是（ ）。","answer":"A","options":{"A":"","B":"一般应直接报送领导者个人","C":"适宜采用概括叙述的表达方式，避免描述事情的细枝末节或罗列数字","D":"可同时要求对历史文化名城周边的自然风景区加以保护管理"},"explanation":"公文翻印后应当注明翻印的时间，以便于追溯和时效性判断。这是公文管理的基本要求。"},{"id":90,"type":"single","question":"在下面哪一种情况下，可以越权批办文件？（ ）","answer":"A","options":{"A":"","B":"避免积压","C":"急需处理","D":"属一般性文件"},"explanation":"根据《党政机关公文格式》规定，公文正文每面排22行。这是公文排版的规范要求。"},{"id":91,"type":"single","question":"在承办公文时，应根据（ ）科学安排承办的次序。","answer":"D","options":{"A":"时效原则","B":"先党后政","C":"意义大小","D":""},"explanation":"涉及全局工作的公文需要经过充分论证和集体讨论，不能直接送机关领导签发，应先经过相关程序和审核。日常性公文可简化程序。"},{"id":92,"type":"single","question":"两个或两个以上机关联合行文时必须做好（ ）工作。","answer":"D","options":{"A":"审核","B":"签发","C":"会商","D":""},"explanation":"签发人姓名标注在发文字号的右侧，与发文字号在同一行。这是上行文标注签发人的标准格式位置。"},{"id":93,"type":"single","question":"制发公文的目的和要求，一般是由（ ）确定的。","answer":"C","options":{"A":"撰写者本人或团体","B":"机关党政负责人","C":"","D":"作者的上级机关"},"explanation":"完整的公文标题由发文机关名称、发文事由和文种三个部分组成，三者缺一不可（虽然特定情况下可省略，但完整形式是三者齐全）。"},{"id":94,"type":"single","question":"公文对结构的要求是（","answer":"A","options":{"A":"","B":"生动","C":"突出","D":"简明"},"explanation":"引用公文应当先引标题，后引发文字号（或发文时间）。规范格式为：发文机关《关于...的请示》（发文字号）。"},{"id":95,"type":"single","question":"以强制力推行的用以规定各种行为规范的法规、规章同于（ ）。","answer":"A","options":{"A":"","B":"领指导性文件","C":"呈请性文件","D":"证明性文件"},"explanation":"公文正文在主送机关名称下一行书写，每段段首空两个字（即两个汉字的宽度）。这是《党政机关公文格式》的规定。"},{"id":96,"type":"single","question":"内容重要并紧急需要打破常规优先传递处理的文件，叫作（ ）。","answer":"D","options":{"A":"平件","B":"加急件","C":"特急件","D":""},"explanation":"公文如需标注紧急程度，应标注在文件首页的左上角。如有密级，紧急程度标注在密级之下。"},{"id":97,"type":"single","question":"供受文者使用的具有法定效用的正式文本，格式规范并具备各种生效标志的稿本称作（ ）。","answer":"C","options":{"A":"草稿","B":"定稿","C":"","D":"副本"},"explanation":"电子公文的形成与传递依靠计算机和网络技术，包括电子签章、加密传输等技术手段，不仅仅是网线或互联网络的简单应用。"},{"id":98,"type":"single","question":"为了维护正常的领导关系， 具有隶属关系或业务指导关系的机关之间应基本采取（ ）。","answer":"A","options":{"A":"","B":"多级行文","C":"越级行文","D":"直接行文"},"explanation":"党政机关公文处理工作严格遵循《党政机关公文处理工作条例》（中办发〔2012〕14号），该条例统一了党政机关公文处理规范。"},{"id":99,"type":"single","question":"下面公文写作中，语句符合规范的是（ ）。","answer":"A","options":{"A":"","B":"我们一定要采取措施，尽可能节省不必要的开支和浪费","C":"目前有关部门已对议报作出停刊整顿并令其主要负责人深刻检查等等纪律处分的处理","D":"一艘在巴拿马注册的名为“协友” 的货轮 9 月 9 日 1 时 30 分在斯里兰卡东部亭可马里突然遭到泰米尔“猛虎” 组织袭击而失事，五名船员失踪"},"explanation":"并非所有公文都需要加盖公章，如纪要可以不盖印章。A项'所有公文都应该加盖公章'说法过于绝对，不正确。"},{"id":100,"type":"single","question":"“由于我们没有建立健全安全保卫制度，结果给流氓、惯偷、 坏人造成了盗窃、 行凶、 阴谋破坏的可趁之机”这句公文用语显然是不规范的，其不正确的原因是（ ）。","answer":"D","options":{"A":"含义不明确不清晰， 让人产生歧义","B":"句子成分搭配不当","C":"语序安排欠妥当","D":""},"explanation":"引用公文应先引标题，后引发文字号。A选项说反了，正确的顺序是先引标题，再引发文字号。"},{"id":101,"type":"single","question":"下面几种说法中，不正确的是（ ）。","answer":"B","options":{"A":"在公文中安排语序时，当一组概念表现由若干连续的动作、行为构成的活动过程时，一般应按时间发展顺序排列","B":"","C":"有些公文的主题，可以根据领导人授意而直接表达，有些公文的主题，则需在调查研究的过程中，随着对客观实际情况全面而深入的探索而逐步提炼与明确","D":"文中的疑问语气一般较少使用语气“啊”“呢”“吧” 等，“吗”也尽可能不用或少用"},"explanation":"在公文写作中，称对方（受文机关）时用'贵'表示尊敬，如'贵局''贵单位'。'本'称己方，'该'指代第三方。"},{"id":102,"type":"single","question":"调查报告的特点是（ ）。","answer":"D","options":{"A":"有明确的针对性","B":"有法定的权威性和执行性","C":"作者广泛","D":""},"explanation":"'以上意见如无不妥，请转发各地区、各部门执行'是建议性结尾用语，表示提出建议供上级参考，请求上级批转执行。"},{"id":103,"type":"single","question":"关于答复询问的报告，叙述错误的是（ ）。","answer":"B","options":{"A":"用语简明，得体，分寸适宜","B":"","C":"是下级机关答复上级机关询问的文种","D":"内容准确真实，实事求是地向领导机关作认真负责的报告"},"explanation":"2000年8月24日，国务院发布了《国家行政机关公文处理办法》，自2001年1月1日起施行。该办法后被2012年的条例取代。"},{"id":104,"type":"single","question":"函灵活简便，可广泛应用于公务联系的各个领域，以下事项不适宜使用函件这一形式的有（ ）。","answer":"D","options":{"A":"北京市人民政府就 X X 发电厂建设问题向国家计委申请","B":"上海市浦东新区人民政府就浦东新区的道路规划问题向上海市交通厅询问","C":"上海市公安厅就打击车匪路霸问题向华东六省的公安厅提出建议","D":""},"explanation":"确立行文关系应遵循的原则包括根据隶属关系、职权范围和工作需要。机关级别不是确立行文关系的直接原则。"},{"id":105,"type":"single","question":"以下有关公文的说法错误的有（ ）。","answer":"D","options":{"A":"公文的基本组成部分有：标题、正文、作者、日期、印章或签署、主题词","B":"通用公文，文称行政公文，指各类机关普遍使用的文件，如请示、报告、 函等","C":"通知的作者广泛，不受机关性质与级别层次的限制","D":""},"explanation":"公文的版记部分包括抄送机关、印发机关和印发日期三个要素，位于公文末页的最下方。"},{"id":106,"type":"single","question":"会议纪要是会议文件的一种，以下关于会议纪要的标题说法正确的是（ ）。","answer":"A","options":{"A":"","B":"标题须写明发文机关名称、事由与文种","C":"标题需写明会议名称、事由、文种","D":"可以采用一般文章标题的形式在标题中简要明确地揭示中心思想"},"explanation":"秘密公文分为秘密、机密、绝密三类（A正确）；涉密公文应当标注份号和密级（B正确）；涉密公文应由专人管理（C正确）。"},{"id":107,"type":"single","question":"命令，（ ）。","answer":"D","options":{"A":"只适用于依照有关法律公布行政法规和规章","B":"只用来宣布施行重大强制性行政措施","C":"只用于嘉奖有关单位和人员","D":""},"explanation":"版头部分（眉首）包括份号、密级、紧急程度、发文机关标志、发文字号、签发人等要素。A、B、C均属于版头部分。"},{"id":108,"type":"single","question":"公告，是用于（ ）。","answer":"C","options":{"A":"向国内宣布重要事项或者法定事项的","B":"向国外宣布重要事项或者法定事项的","C":"","D":"向国内外宣布行政法规和规章的"},"explanation":"公文标题中一般不使用标点符号，这是标题拟制的基本原则。但标题中遇到法规、规章名称时可以用书名号。一般情况下不用标点。"},{"id":109,"type":"single","question":"通报的适用范围（ ）。","answer":"C","options":{"A":"只用于表彰先进","B":"只用于批评错误","C":"","D":"只用于传达重要精神或者情况"},"explanation":"任免通知正文最规范的表述是：经研究决定：XX同志任XX处处长，免去其XX处处长职务。D选项将任职和免职在同一句中表达清楚。"},{"id":110,"type":"single","question":"发文字号应当包括（ ）。","answer":"C","options":{"A":"括号，序号","B":"机关代字，序号","C":"","D":"年份，序号"},"explanation":"公文语言要求准确、庄重、简洁、规范。B选项'依法严厉打击制假售假等违法犯罪活动'表述规范、用词准确，符合公文语言特点。"},{"id":111,"type":"single","question":"以下适宜用命令行文的有（ ）。","answer":"AB","options":{"A":"公布《","C":"经市政府研究，拟对黄朝炎等 20 名科普先进工作者予以表彰。","B":"公布《关于进一步健全完善人口和计划生育利益导向机制的意见》","D":"印发《 W 市行政决策听证规则（暂行）》等六份文件 AB"},"explanation":"抄送机关可以是多个与公文内容相关的机关（A正确）；应选择与公文内容有关的机关（B正确）；可以是上级或平级机关（C正确）。"},{"id":112,"type":"single","question":"行政机关公文处理管理机构是什么？（ ）","answer":"B","options":{"A":"政策研究室","B":"","C":"人事处","D":"．档案室"},"explanation":"公文写作要求实事求是、准确规范，不得使用夸张、比喻等文学修辞手法。D选项'可以使用夸张手法'违反公文写作规范。"},{"id":113,"type":"single","question":"某单位在抗洪抢险中做出了较大贡献，万州区政府准备对该单位和相关人员进行奖励，适用的公文文种是（ ）。","answer":"D","options":{"A":"．决定","B":"．通知","C":"．命令（令）","D":""},"explanation":"主送机关是公文的主要受理机关，即需要办理或答复公文内容的机关。抄送机关是仅需了解公文内容的机关。"},{"id":114,"type":"single","question":"中国人民银行就国家货币出入境限额管理问题发文，宜用（ ）行文。","answer":"B","options":{"A":"．决定","B":"","C":"．通知","D":"．通告"},"explanation":"公文处理环节中，拟办、批办、承办是公文办理的重要环节。催办属于公文管理中的监督手段而非处理环节。按给定答案D。"},{"id":115,"type":"single","question":"下列选项中，说法错误的是（ ）。","answer":"A","options":{"A":"","B":"．决议和决定都是下行文，都是决策性文种","C":"．决议内容的理论性、原则性强；决定的内容相对比较具体，实践性强","D":"．决议的形成时间一般放在标题下；而决定的形成时间有的放在标题下，有的放在落款处"},"explanation":"公文用印时，印章应盖在成文日期的正中央，即'骑年盖月'的规范要求——印章上沿压年月，下沿盖在成文日期上。"},{"id":116,"type":"single","question":"下列选项中，具备向同级人民代表大会提出议案资格的是（ ）。","answer":"D","options":{"A":"政府各部门","B":"党团组织","C":"企事业单位","D":""},"explanation":"公文语言的基本要求是准确、简洁、平实、庄重。准确是前提，简洁求精炼，平实求质朴，庄重求郑重规范。"},{"id":118,"type":"single","question":"下列哪一项可用于请示的结尾？（ ）","answer":"C","options":{"A":"以上报告，请审议","B":"以上当否，请尽快答复","C":"","D":"以上意见如无不妥，请批转执行"},"explanation":"总结是对前阶段工作情况进行回顾、检查和分析评价的文书。重庆市人民政府对前阶段工作的回顾分析应使用总结。"},{"id":119,"type":"single","question":"意见，适用于下列哪一项？（ ）","answer":"A","options":{"A":"","B":"向上级机关请求指示、批准","C":"不相隶属机关之间商洽工作，询问和答复问题，请求批准和答复审批事项","D":"答复下级机关的请示事项"},"explanation":"总结的正文结构形式灵活多样，可以采用纵式（按时间顺序）、横式（按内容分类）或纵横式（综合运用）三种结构形式。"},{"id":120,"type":"single","question":"会议纪要，适用于下列哪一项？（ ）","answer":"C","options":{"A":"对重要问题提出见解和处理办法","B":"向上级机关请求指示、批准","C":"","D":"答复下级机关的请示事项"},"explanation":"措施是计划的灵魂和关键，因为计划的目标是否实现、任务是否完成，主要靠切实可行的措施来保障。没有措施，计划就失去了可操作性。"},{"id":121,"type":"single","question":"写作一份计划，其主体中的三要素应当包括（ ）。","answer":"C","options":{"A":"标题、正文、落款","B":"时间、事由、文种","C":"","D":"前言、主体、结尾"},"explanation":"A选项'XX县公安局2023年工作总结'明确含有'总结'二字，属于总结类文种。其他选项的工作要点、安排、打算属于计划类文书。"},{"id":122,"type":"single","question":"下列选项中，语言表达符合规范的是（ ）。","answer":"B","options":{"A":"经过修改后的正式文件比原稿有明显提高。","B":"","C":"参加工作 15 年以上的职工一年可享受 10 天以下的带薪旅游假。","D":"新一代多普勒雷达站的建立，将使气象预报的方法发生很大的改进。"},"explanation":"总结的内容包括基本情况、成绩和经验、问题和教训三部分。未来发展预测是计划的范畴，不包括在总结中。"},{"id":123,"type":"single","question":"“公文是历史的记录，是时代的凭证”。这句话体现出公文的哪一项作用？（ ）","answer":"D","options":{"A":"宣传教育作用","B":"指导管理作用","C":"信息交流作用","D":""},"explanation":"计划的核心要求是具有可行性，目标应在现有条件和努力范围内可以实现。目标过高脱离实际无法实现；计划也需要适时调整。"},{"id":124,"type":"single","question":"财政局向规划局请求批准本单位建设规划，应使用的文种是（ ）。","answer":"A","options":{"A":"","B":"请示","C":"报告","D":"意见"},"explanation":"简报的报头包括简报名称、期号、编发单位、印发日期和密级（如需要）等要素。C选项最完整。"},{"id":125,"type":"single","question":"某单位在工作中犯了严重错误，市政府决定进行公开批评，应使用的文种是（ ）。","answer":"C","options":{"A":"决定","B":"通告","C":"","D":"简报"},"explanation":"纪要的特点是纪实性（如实记录）、摘要性（摘录要点）和概括性（概括主要精神）。指令性不是纪要的基本特点。"},{"id":126,"type":"single","question":"市区某自来水厂因故检修，需停水三天。应当使用什么文种告知市民？（ ）","answer":"C","options":{"A":"公告","B":"通知","C":"","D":"启示"},"explanation":"简报是一种内部刊物，用于反映情况、交流经验。它不是正式公文，不具约束力，不能代替请示、报告等正式公文文种。"},{"id":127,"type":"single","question":"某局办公室小王于 10 月 20 日 起草了一份关于加强机关内部管理的文件，办公室主任于 10 月 21 日 修改完成，副局长于当日签署同意，局长直到 12 月 5 日 才签发同意，办公室于 12 月 6 日 印发。这份文件的成文日期是（ ）。","answer":"D","options":{"A":"12 月 6 日","B":"10 月 21 日","C":"10 月 20 日","D":""},"explanation":"纪要可以对外公布而会议记录一般不对外（A正确）；纪要是公文而会议记录不是（B正确）；会议记录是原始记录而纪要是经过整理的（C正确）。"},{"id":128,"type":"single","question":"适用于依照有关法律公布行政法规和规章、宣布施行重大强制性行政措施、嘉奖有关单位及人员的文种是（ ）","answer":"C","options":{"A":"通告","B":"公告","C":"","D":"通知"},"explanation":"通报适用于表彰先进、批评错误、传达重要精神和告知重要情况。这是通报文种的法定适用范围。"},{"id":129,"type":"single","question":"下列选项中，适用于通知的是（ ）。","answer":"B","options":{"A":"表彰先进，批评错误，传达重要精神或者情况","B":"","C":"向上级机关汇报工作，反映情况，答复上级机关的询问","D":"各级人民政府按照法律程序向同级人民代表大会或人民代表大会常务委员会提请审议事项"},"explanation":"通报的适用范围包括表彰先进、批评错误、传达重要精神和通报重要情况。A、B、C三个选项均正确。"},{"id":130,"type":"single","question":"按照报告内容涉及的范围划分，《政府工作报告》属于（ ）。","answer":"C","options":{"A":"答复报告","B":"专题报告","C":"","D":"情况报告"},"explanation":"通报属于下行文，具有典型性和时效性。D选项本身正确但题目要求选错误的，按给定答案为D。"},{"id":131,"type":"single","question":"下列哪一项可用于批复的结尾？（ ）。","answer":"C","options":{"A":"当否，请批示","B":"特此请示，盼复","C":"","D":"以上意见如无不妥，请批转执行"},"explanation":"请示适用于向上级机关请求指示、批准。请求上级批准和指示是请示的核心功能。报告用于汇报，意见提建议，函用于平行。"},{"id":132,"type":"single","question":"是国家机关、社会团体、企事业单位等通过对过去一阶段工作的回顾和分析评价，用以指导今后工作的常用文书。","answer":"B","options":{"A":"简报","B":"","C":"计划","D":"调查报告"},"explanation":"市场调查报告正文的主体包括：情况部分（介绍调查基本情况）、预测部分（分析数据预测趋势）和建议部分（提出对策建议）。"},{"id":133,"type":"single","question":"下列选项中，适用于写作会议纪要的是（ ）。","answer":"C","options":{"A":"对重要问题提出见解和处理办法","B":"向上级机关请求指示、批准","C":"","D":"答复下级机关的请示事项"},"explanation":"行政法规是国务院制定的规范性文件。《行政机关公务员处分条例》由国务院制定，属于行政法规。其他选项由全国人大制定属于法律。"},{"id":134,"type":"single","question":"下列哪一项不属于法定公文（ ）。","answer":"B","options":{"A":"请示","B":"","C":"函","D":"批复"},"explanation":"附件说明应标注在正文之后、版记之前。按公文格式顺序：正文、附件说明、发文机关署名、成文日期、附注、附件、版记。"},{"id":135,"type":"single","question":"写作计划，其主体包含的三要素是（ ）。","answer":"C","options":{"A":"标题、正文、落款","B":"时间、事由、文种","C":"","D":"前言、主体、结尾"},"explanation":"请示的写作规范包括：一文一事（A正确）；一般不得直接送领导者个人（B正确）；不得抄送下级机关（C正确）。"},{"id":136,"type":"single","question":"王局长参加市政府工作会议，带回了一批文件。对于这些文件他应该怎样处理？（ ）。","answer":"A","options":{"A":"","B":"存入王局长本人文件柜","C":"使用完毕作为废品变卖","D":"交给相关工作人员参阅"},"explanation":"报告适用于向上级机关汇报工作、反映情况。某市公安局将全年工作总结上报上级单位，属于汇报工作，应用报告。"},{"id":137,"type":"single","question":"下列撰写公文常见的缺点，属于 “ 语句表述不完整 ” 的问题是（ ）。","answer":"A","options":{"A":"","B":"篇幅冗长","C":"交代不明","D":"眉目不清"},"explanation":"调查报告主体部分的结构形式有纵式（按时间或调查顺序）、横式（按内容分类）和纵横交错式（综合运用）。"},{"id":138,"type":"single","question":"几个机关联合发文，只能标明（ ）。","answer":"A","options":{"A":"","B":"所有机关的发文字号","C":"至少两个机关的发文字号","D":"根据情况临时规定的发文字号"},"explanation":"计划类文书的核心要素包括目标（做什么）、措施（怎么做）和步骤（何时做），三者缺一不可。"},{"id":140,"type":"single","question":"发文字号年份的正确写法是（ ）。","answer":"B","options":{"A":"〔 23 〕","B":"","C":"〔 ’23 〕","D":"〔 2023 年〕"},"explanation":"《党政机关公文处理工作条例》规定的法定公文文种共15种，不包括'规定'。规定属于规章性文书，不是法定公文文种。"},{"id":141,"type":"single","question":"公文区别于其他文章的主要之点是（ ）。","answer":"C","options":{"A":"公文形成的主体是国家机关及其他社会组织","B":"公文形成的条件是行使职权和实施管理","C":"","D":"公文是办理公务的重要工具之一"},"explanation":"《党政机关公文处理工作条例》规定，公文处理工作应当坚持实事求是、准确规范、精简高效、安全保密的原则。"},{"id":142,"type":"single","question":"《 ×× 广播局关于向 ×× 县土地局申请划拨建设电视转播台用地的请示》，该标题主要的错误是（ ）。","answer":"C","options":{"A":"违反报告不得夹带请示的规定","B":"违反应协商同意后再发文的规定","C":"","D":"错误使用文种，应使用报告"},"explanation":"公文写作具有实用性（有实际用途）、真实性（内容真实准确）、规范性（格式规范统一）的特点。"},{"id":143,"type":"single","question":"适用于“公布重要决定或重大事项”法定公文文种是（ ）。","answer":"B","options":{"A":"公告","B":"","C":"通报","D":"通告"},"explanation":"在公文标题中，'关于'的作用是引出事由（即公文的主要内容），连接发文机关和事由，是介词结构的核心组成部分。"},{"id":144,"type":"single","question":"不属于公文版头部分的是（ ）。","answer":"B","options":{"A":"发文机关标志","B":"","C":"发文字号","D":"签发人"},"explanation":"公文具有规范体式（格式统一标准）、法定效力（具有法律和行政约束力）、特定程序（拟制、审核、签发等流程）三个基本特征。"},{"id":145,"type":"single","question":"给直属上级的请示，使用第一人称最恰当的是（ ）。","answer":"C","options":{"A":"本单位","B":"本人","C":"","D":"该单位"},"explanation":"公文的特点包括法定性（法定作者、法定效力）、规范性（格式规范）、程序性（处理有严格程序）等。文学性不是公文特点。"},{"id":146,"type":"single","question":"修改标题：《关于请求将 XX 同志追认为革命烈士的报告》，下列选项正确的是（ ）。","answer":"B","options":{"A":"《关于请求将 XX 同志追认为革命烈士的请示》","B":"","C":"《关于追认 XX 同志为革命烈士的报告》","D":"《关于将 XX 同志追认为革命烈士的报告》"},"explanation":"公文处理原则包括实事求是、精简高效、安全保密等。灵活变通不符合公文处理的规范性要求。"},{"id":147,"type":"single","question":"一般应标识签发负责人姓名的文件是（ ）。","answer":"A","options":{"A":"","B":"平行文","C":"下行文","D":"越级行文"},"explanation":"公文版记要素包括抄送机关、印发机关和印发日期，这些要素在公文末页底部标注。"},{"id":148,"type":"single","question":"公文的秘密等级应标于文头的（ ）。","answer":"A","options":{"A":"","B":"右上角","C":"左下角","D":"右下角"},"explanation":"发文字号由发文机关代字、年份和发文顺序号三部分组成，如'国发〔2023〕1号'。三者缺一不可。"},{"id":149,"type":"single","question":"只能有一个主送机关的行文是（ ）。","answer":"A","options":{"A":"","B":"平行文","C":"下行文","D":"泛行文"},"explanation":"重庆市公安局和重庆市教育委员会虽同为重庆市人民政府的下属部门，但彼此间没有领导或隶属关系，属于不相隶属关系。"},{"id":150,"type":"single","question":"不符合用印要求的是（ ）。","answer":"C","options":{"A":"位置在发文时间上方","B":"上不压正文","C":"","D":"下要压年月日"},"explanation":"加盖公章是公文生效的法定标志。印章表明公文的真实性和法定效力，是公文生效的核心标识。"},{"id":151,"type":"single","question":"市税务局向社会公布征收年度税款事项，用（ ）。","answer":"B","options":{"A":"公告","B":"","C":"通知","D":"函"},"explanation":"公文处理工作具有政治性（体现机关意志）、规范性（严格按规范进行）、时效性（讲究时间效率）等特点。"},{"id":152,"type":"single","question":"适用于对重要事项或重大行动做出安排的公文是（ ）。","answer":"A","options":{"A":"","B":"命令","C":"通告","D":"批复"},"explanation":"指示性通知用于向下级机关布置工作、作出指示。'开展安全生产大检查'属于部署工作，用指示性通知。"},{"id":153,"type":"single","question":"通报和通告共同具有的一个特质是（）。","answer":"C","options":{"A":"独特性","B":"指导性","C":"","D":"政策性"},"explanation":"公文语言要求准确、简明、庄重、平实，不能使用含糊、含蓄、模糊的表达方式。含蓄与公文明确性的要求不符。"},{"id":154,"type":"single","question":"收到请示，应当（ ）。","answer":"C","options":{"A":"根据事情大小或必要性来决定是否批复。","B":"根据紧急程度来决定是否批复。","C":"","D":"根据单位领导的批办意见决定是否答复。"},"explanation":"版记部分包括抄送机关、印发机关和印发日期三个要素。主送机关和发文机关署名属于主体部分。"},{"id":155,"type":"single","question":"以下这段文字采用的说明方法是（ ）。 刺绣是我国的传统技艺之一。我国的刺绣品种主要有：苏州的苏绣，湖南的湘绣，四川的蜀绣，和广东的粤绣等。","answer":"D","options":{"A":"比较说明法","B":"定义说明法","C":"诠释说明法","D":""},"explanation":"公文眉首部分（版头）包括份号、密级和保密期限、紧急程度、发文机关标志、发文字号、签发人等要素。"},{"id":156,"type":"single","question":"下列公文写作中，语句符合规范的是（ ）。","answer":"B","options":{"A":"经研究，县政府同意乡政府报告。","B":"","C":"参加工作 15 年以上的职工，一年可享受 10 天以下的带薪旅游假。","D":"在主席台就座的还有几个先进单位的代表。"},"explanation":"公文版头部分包括发文机关标志、发文字号、签发人等。标题属于公文主体部分，不属于版头。"},{"id":157,"type":"single","question":"下列比较规范的公文标题是（ ）。","answer":"D","options":{"A":"市政府办公室关于加强毕业生就业工作。","B":"市人民政府办公室关于加强高校毕业生就业工作的通知。","C":"市人民政府办公室关于毕业生就业工作的通知。","D":""},"explanation":"公文的基本构成要素包括发文机关、标题、正文等。附件不是公文的必要构成要素，有些公文不需要附件。"},{"id":158,"type":"single","question":"《 ×× 厂关于进口ＳＤ 6 型自动车床的请示》，作者是（ ）。 A ×× 厂","answer":"A","options":{"B":"×× 厂的负责人","C":"起草文件的刘秘书","D":"签发文件的董厂长","A":""},"explanation":"颁布性通知用于发布规章、制度、办法等。国务院发布《国家行政机关公文处理办法》是典型的颁布性通知。"},{"id":159,"type":"single","question":"根据事由： “×× 公司发行重点钢铁企业债券 ” ，应使用的文种是（ ）。","answer":"C","options":{"A":"通报","B":"通知","C":"","D":"决定"},"explanation":"《党政机关公文处理工作条例》规定的法定公文文种不包括'制度'。制度属于规章文书，不是法定公文。"},{"id":160,"type":"single","question":"下列哪个事由，根据《办法》，不可以使用 “ 决定 ” （ ）。","answer":"D","options":{"A":"严惩严重破坏社会治安的犯罪分子的工作安排","B":"大兴安岭森林特大火灾事故的处理","C":"授予 ××× 全国劳动模范称号的嘉奖","D":""},"explanation":"公文结构的基本要求是严谨（逻辑严密）、自然（顺理成章）、完整（内容全面）、统一（风格一致）。"},{"id":161,"type":"single","question":"公文要选择适宜的行文方式，一般不得（ ）。","answer":"C","options":{"A":"逐级行文","B":"多级行文","C":"","D":"直接行文"},"explanation":"发文办理的主要程序包括复核、登记、印制和核发四个环节。这是《党政机关公文处理工作条例》的明确规定。"},{"id":162,"type":"single","question":"下面选项中不属于公文特定格式的是（ ）。","answer":"D","options":{"A":"信函格式","B":"命令（令）格式","C":"纪要格式","D":""},"explanation":"《党政机关公文格式》规定的特定格式有信函格式、命令格式和纪要格式三种。意见格式不属于特定格式。"},{"id":163,"type":"single","question":"办公室更改电话号码，可用（ ）公布周知。","answer":"B","options":{"A":"通知","B":"","C":"启事","D":"布告"},"explanation":"通告适用于在一定范围内公布应当遵守或者周知的事项。办公室更改电话号码需要在一定范围内告知，应用通告。"},{"id":164,"type":"single","question":"批复是答复下级请示的文件，是（ ）。","answer":"A","options":{"A":"","B":"主动发文","C":"对报告的批件","D":"下级没有请示，用来指导工作的"},"explanation":"批复用于答复下级机关的请示事项，先有请示才有批复，因此是被动发文。其他选项不符合批复的性质。"},{"id":165,"type":"single","question":"非同一系统的任何机关相互行文都使用（ ）。","answer":"B","options":{"A":"上行文","B":"","C":"通知","D":"下行文"},"explanation":"命令（令）是上级对下级发布的下行文。报告、请示是上行文，函是平行文。"},{"id":166,"type":"single","question":"根据文件来源，在一个机关内部可将公文分为（ ）。","answer":"A","options":{"A":"","B":"上行文、平行文、下行文","C":"通用公文、专业公文","D":"本机关制发的和内部使用的公文"},"explanation":"呈请性公文是指向上级请求指示或批准的公文，请示是其典型代表。决定、公告、通知均不属于呈请性公文。"},{"id":167,"type":"single","question":"属于商洽性文件的主要文种是（ ）。","answer":"C","options":{"A":"请示","B":"通知","C":"","D":"通报"},"explanation":"紧急程度应标注在文件首页的左上角，与份号、密级等位于同一区域，这是公文格式的规范要求。"},{"id":168,"type":"single","question":"任免人员应使用的文种是（ ）。","answer":"C","options":{"A":"通报","B":"批复","C":"","D":"通告"},"explanation":"通报是下行文，适用于表彰先进、批评错误、传达重要精神。报告、请示是上行文，函是平行文。"},{"id":169,"type":"single","question":"某区政府向市政府请求增拨救灾资金，应用（ ）行文。","answer":"B","options":{"A":"报告","B":"","C":"函","D":"申请"},"explanation":"公文的版记部分包括抄送机关、印发机关和印发日期三个要素，位于公文末页最下方。"},{"id":170,"type":"single","question":"用于记载会议主要精神和议定事项的公文是（ ）。","answer":"C","options":{"A":"决议","B":"会议记录","C":"","D":"议案"},"explanation":"份号是公文印制份数的顺序号（A正确）；涉密公文应当标注份号（B正确）；标注在文件首页左上角（C正确）。"},{"id":171,"type":"single","question":"以下四个标题，表述最恰当的一个（ ）。","answer":"D","options":{"A":"西陵学院对优秀学生给予表彰的通报","B":"西陵学院关于表彰优秀学生的通知","C":"西陵学院关于对优秀学生进行表彰的通报","D":""},"explanation":"根据《党政机关公文处理工作条例》第五条，公文处理工作应当坚持实事求是、准确规范、精简高效、安全保密的原则。"},{"id":172,"type":"single","question":"下列事项分别适用的文种是（ ）。 （ 1 ）××县政府向社会公开发文禁止乱占耕地 （ 2 ）××教育局告知相关学校参加××会议 （ 3 ）××总公司向下属单位告知李×违反劳动纪律造成重大火灾事故的情况 （ 4 ）××大学告知校运会的具体安排","answer":"D","options":{"A":"通告、通知、决定、通知","B":"通知、通知、通报、通告","C":"通知、通告、决定、通知","D":""},"explanation":"公文用纸的上白边（天头）尺寸为37mm±1mm，这是《党政机关公文格式》规定的标准尺寸。"},{"id":173,"type":"single","question":"下列选项中不属于公文必备的基本组成部分的是（ ）。","answer":"B","options":{"A":"发文机关","B":"","C":"标题","D":"成文日期"},"explanation":"公文结构的要求包括严谨（严密逻辑）、自然（顺畅合理）、完整统一（协调一致）。以上说法均正确。"},{"id":174,"type":"single","question":"用于在一定范围内公布应当遵守或周知的事项的公文是（ ）。","answer":"D","options":{"A":"通知","B":"通告","C":"公告","D":""},"explanation":"公文语言的基本要求是准确（用语精确）、简明（言简意赅）、平实（朴素实在）、庄重（郑重规范）。"},{"id":175,"type":"single","question":"公文的层次安排有（ ）、递进式、并列式。","answer":"C","options":{"A":"条文式","B":"图表式","C":"","D":"点题式"},"explanation":"发文字号规范格式为：机关代字〔年份〕顺序号。A'渝府发〔2023〕1号'完全符合规范。B用圆括号错误，C多'第'字，D顺序号不应编0。"},{"id":176,"type":"single","question":"函的使用灵活简便，可广泛应用于联系各个领域，以下选项适用函的是（ ）。","answer":"B","options":{"A":"××市人民政府向××省人民政府发文请求拨给××发电厂建设经费","B":"","C":"××市公安局就打击车匪路霸问题向省公安厅提出建议","D":"最高人民法院就事业单位人事争议仲裁时效如何计算回复四川省高级人民法院"},"explanation":"公文格式分为版头、主体、版记三大部分（A正确）；版头包括份号、密级等（B正确）；主体包括标题、正文等（C正确）。"},{"id":177,"type":"single","question":"按现行规定，公文标题一般使用的字号字体是（ ）。 A.2 号黑体字 B.2 号小标宋体字 C.3 号仿宋体字 D.3 号楷体字","answer":"B","options":{"B":""},"explanation":"公文写作的特点包括写作动机的实用性（目的明确实用）、写作内容的真实性（内容真实可靠）、写作形式的规范性（格式统一规范）。"},{"id":178,"type":"single","question":"市人民政府对设立自贸区的重要事项做出决策和部署，行文应选（ ）。","answer":"C","options":{"A":"意见","B":"命令","C":"","D":"公告"},"explanation":"公文由份号、密级等要素组成（A正确）；标题应准确概括内容（B正确）；正文是主体部分（C正确）。"},{"id":179,"type":"single","question":"公文的标题，在任何情况下都不能省略的是（ ）。","answer":"C","options":{"A":"发文机关","B":"事由","C":"","D":"关于"},"explanation":"公文主体部分包括标题、主送机关、正文、附件说明、发文机关署名、成文日期和印章等。三个选项均属于主体部分。"},{"id":180,"type":"single","question":"江南小学向区公安分局请求整治校园周边治安环境，行文应选 （ ）。","answer":"D","options":{"A":"请示","B":"通知","C":"报告","D":""},"explanation":"通报的主要特点包括典型性（事例具有代表性）、教育性（通过典型教育引导）和时效性（要及时通报）。"},{"id":181,"type":"single","question":"必须标明份号的公文是（ ）。","answer":"A","options":{"A":"","B":"紧急公文","C":"下行公文","D":"上行公文"},"explanation":"知照性公文是向一定范围告知事项的公文，通告是典型的知照性公文。报告和请示是呈请性公文，意见是指导性公文。"},{"id":182,"type":"single","question":"市文化局就开发文化市场向市政府提出见解和办法，行文应选 （ ）。","answer":"C","options":{"A":"报告","B":"请示","C":"","D":"函"},"explanation":"指示性通知用于向下级布置工作、提出要求。'开展财政资金专项检查'是部署检查工作，属于指示性通知。"},{"id":183,"type":"single","question":"市交通管理局向社会公布公交线路调整情况，行文应选 （ ）。","answer":"B","options":{"A":"决定","B":"","C":"公告","D":"通报"},"explanation":"公文标题一般由发文机关、事由和文种三要素组成，但在特定情况下发文机关和事由可以省略。D选项完整表述了标题组成规则。"},{"id":184,"type":"single","question":"下列格式要素中属于公文“主体”部分的是（ ）。","answer":"B","options":{"A":"发文机关标志","B":"","C":"印发机关和印发日期","D":"抄送机关"},"explanation":"公文眉首部分（版头）包括份号、密级和保密期限、紧急程度、发文字号等要素。A、B、C均属于眉首部分。"},{"id":185,"type":"single","question":"建设中学书面回复市教委询问的事项，行文应选（ ）。","answer":"C","options":{"A":"通知","B":"通报","C":"","D":"函"},"explanation":"公文的成文日期应使用小写汉字数字（汉字数字）标注，如'二〇二三年六月二十五日'。这是《党政机关公文格式》的明确规定。"},{"id":186,"type":"single","question":"加盖印章的公文，其成文日期的编排一般应当是（ ）。","answer":"A","options":{"A":"","B":"右空二字","C":"右齐边线","D":"在该行居中位置"},"explanation":"联合行文时，成文日期以最后签发机关负责人签发的日期为准。这体现了各联合发文单位的平等关系。"},{"id":187,"type":"single","question":"渝信学院对违纪学生分别给予批评和处分，行文应选 （ ）。","answer":"B","options":{"A":"通告","B":"","C":"公告","D":"公示"},"explanation":"公文处理工作主要包括公文拟制（起草、审核、签发）、公文办理（收文、发文）和公文管理三大方面。"},{"id":188,"type":"single","question":"中共重庆市委发布四届九次全会通过的重大决策，行文应选 （ ）。","answer":"D","options":{"A":"命令","B":"公告","C":"通知","D":""},"explanation":"收文办理的主要程序依次为：签收、登记、初审、承办、传阅、催办、答复。这是一个完整的流程。"},{"id":189,"type":"single","question":"下列各项中，符合公文成文日期标注要求的是 （ ） 。 A.2023 年 8 月 6 日","answer":"A","options":{"B":"二〇二三年八月六日 C.20230806 D.2023-8-6","A":""},"explanation":"涉密公文应当标注份号（印制顺序号）、密级（秘密/机密/绝密）和保密期限，三者均为必要标注内容。"},{"id":190,"type":"single","question":"重庆司法局向社会宣布有关法律规定的事项，行文应选（ ）。","answer":"C","options":{"A":"条例","B":"公报","C":"","D":"通知"},"explanation":"发文办理的最后环节是核发（分发），即将印制完成的公文进行登记、封装和分发，标志着发文办理的完成。"},{"id":191,"type":"single","question":"下列文种中，不属于党政公文主要文种的是（ ）。","answer":"D","options":{"A":"纪要","B":"批复","C":"意见","D":""},"explanation":"批转性通知用于上级机关批转下级机关的公文。标题中'批转'表明是上级批转下级来文。"},{"id":192,"type":"single","question":"可以用党政公文中“议案”行文的单位是（ ）。","answer":"A","options":{"A":"","B":"中共新宇县委","C":"南方航空公司","D":"国家教育部"},"explanation":"公文主体部分包括标题、主送机关、正文、附件说明、发文机关署名、成文日期和印章等。三个选项均属于主体部分。"},{"id":193,"type":"single","question":"重庆某大学拟将市教委《关于开展大学生公文写作技能竞赛活动的通知》转发给各个院系，行文应选（ ）。","answer":"B","options":{"A":"通告","B":"","C":"通报","D":"意见"},"explanation":"公文审核包括审核内容是否符合法规（A正确）、格式是否规范（B正确）、语言是否准确（C正确）等多方面内容。"},{"id":194,"type":"single","question":"当主送机关过多导致公文首页不能显示正文时，正确的处理办法是（ ）。","answer":"B","options":{"A":"省略全部主送机关","B":"","C":"将主送机关移至成文日期之下","D":"第一个主送机关名称后加“等”字"},"explanation":"按给定答案，公文正文层次序数第一层用'1.'。实际国家标准第一层用'一、'，但本题给定答案为C。"},{"id":195,"type":"single","question":"南华学院答复庆林公司同意租借运动场，行文应选（ ）。","answer":"A","options":{"A":"","B":"批复","C":"通知","D":"通报"},"explanation":"公文正文层次序数第二层用'（一）'（带括号的汉字数字）。完整的层级顺序为：一、、（一）、1.、（1）。"},{"id":196,"type":"single","question":"公文如有“附注” ，应外加圆括号标注在（ ）。","answer":"C","options":{"A":"公文正文的下一行","B":"公文版记中抄送机关的下一行","C":"","D":"公文附件名称的下一行"},"explanation":"公文正文层次序数第三层用'1.'（阿拉伯数字加下点）。完整的层级顺序为：一、、（一）、1.、（1）。"},{"id":197,"type":"single","question":"公文具有法定的权威性，其制发必须是（ ）。","answer":"D","options":{"A":"法律部门","B":"上级机关","C":"部门领导","D":""},"explanation":"公文正文层次序数第四层用'（1）'（带括号的阿拉伯数字）。完整的层级顺序为：一、、（一）、1.、（1）。"},{"id":198,"type":"single","question":"内容重要且紧急，要求迅速形成和处理或必须在规定的时限内办理完毕的公文是（ ）。","answer":"B","options":{"A":"特急公文","B":"","C":"平级公文","D":"常规公文"},"explanation":"根据《党政机关公文格式》规定，公文正文每面排22行。这是公文排版的规范要求。"},{"id":199,"type":"single","question":"含有重要的国家秘密，泄露会使国家的安全与利益遭受到严重损害的文件，属于（ ）。","answer":"C","options":{"A":"秘密文件","B":"绝密文件","C":"","D":"保密文件"},"explanation":"公文标题中除书名号外一般不使用标点符号。当标题中出现法规、规章、文件名称时，可以使用书名号标注。"},{"id":200,"type":"single","question":"不同的公文，其行文的目的各异，要传达的思想内容不同这就需要变换多种表达方式。下列表达方式中不适用于公文的是（）。","answer":"D","options":{"A":"叙述","B":"说明","C":"议论","D":""},"explanation":"公文标题应当准确概括主要内容（A正确）、文字简要明了（B正确）、一般由发文机关加事由加文种组成（C正确）。"},{"id":201,"type":"single","question":"下列文种不属于报请性公文的是（ ）。","answer":"D","options":{"A":"报告","B":"请示","C":"议案","D":""},"explanation":"公文标注签发人一般用于上行文，这是为了明确公文责任，方便上级机关了解公文签发情况。"},{"id":202,"type":"single","question":"下列说法不正确的是（ ）。","answer":"D","options":{"A":"命令必须在宪法、法律规定的职权范围内发布。","B":"命令的内容单一，采取一文一事的形式。","C":"命令的语言不能含糊不清，模棱两可。","D":""},"explanation":"纪要可以对外公布而会议记录一般不对外（A正确）；纪要是法定公文而会议记录不是（B正确）；纪要是整理摘要而会议记录是原始记录（C正确）。"},{"id":203,"type":"single","question":"下列选项中关于总结的说法不正确的是（ ）。","answer":"D","options":{"A":"总结在撰写的过程中可以使用形容词和程度副词。","B":"总结的主要内容是针对已经做过的事情而言的。","C":"总结不能报喜不报忧或者多报喜少报忧。","D":""},"explanation":"请示和报告的主要区别在于：请示需要上级批复（有请示必批复），报告不需要上级批复（仅汇报不请求）。"},{"id":204,"type":"single","question":"简报由（ ）三部分组成。","answer":"A","options":{"A":"","B":"版头、版心、版记","C":"开头、主体、结尾","D":"标题、正文、落款"},"explanation":"公文文种的选择需要根据具体内容和行文目的确定，严厉打击刑事犯罪活动可以用多种文种，需根据具体情况判断最合适的文种。"},{"id":205,"type":"single","question":"下列说法不正确的是（ ）。","answer":"D","options":{"A":"讲话稿的开头也称开场白。","B":"讲话稿的核心必须围绕讲话的中心问题分析和论述。","C":"讲话稿在不同层次转换之处可以穿插“同志们”或“朋友们”等称谓用语。","D":""},"explanation":"通知是最常用的公文文种之一，'特此通知'也是公文中最为常见和通用的结尾用语。"},{"id":206,"type":"single","question":"在规范性文件中表述惩处办法的内容应写入（ ）。","answer":"C","options":{"A":"总则","B":"分则","C":"","D":"附则"},"explanation":"公文标题应当准确概括主要内容（A正确）、文字简要明了（B正确）、一般包含发文机关、事由和文种三部分（C正确）。"},{"id":207,"type":"single","question":"收文办理中的中心环节是（ ）。","answer":"C","options":{"A":"拟办","B":"批办","C":"","D":"注办"},"explanation":"成文日期确定规则：一般以负责人签发日期为准（A正确）；联合行文以最后签发日期为准（B正确）；会议通过以通过日期为准（C正确）。"},{"id":208,"type":"single","question":"关于电子公文下列说法正确的是（ ）。","answer":"D","options":{"A":"电子公文的服务机关是政府部门。","B":"电子公文的目标是实现办公自动化。","C":"电子公文是一种新型的电子文稿。","D":""},"explanation":"在公文上行文中，签发人姓名标注在发文字号的同一行右侧，即与发文字号在同一行并居右。"},{"id":209,"type":"single","question":"《中共中央关于印发 < 中国共产党纪律处分条例 > （试行）的通知》是（ ）。","answer":"B","options":{"A":"批转性通知","B":"","C":"转发性通知","D":"指示性通知"},"explanation":"公文写作的特点包括实用性（有实用目的）、真实性（内容真实可靠）、规范性（格式统一规范）。艺术性不是公文写作特点。"},{"id":210,"type":"single","question":"抄送机关指（ ）。","answer":"C","options":{"A":"收文机关","B":"办理或答复收文的机关","C":"","D":"必须送达的机关"},"explanation":"公文行文规范包括行文关系（机关间工作关系）、行文方向与方式（上行/下行/平行及逐级/多级/越级方式）和行文规则（遵守的规范）三个方面。"},{"id":211,"type":"single","question":"成文日期通常是指（ ）。","answer":"D","options":{"A":"草拟公文文稿的日期","B":"公文印制完毕的日期","C":"领导人在公文正本上签署的日期","D":""},"explanation":"成文日期是公文生效的法定时间。根据《党政机关公文处理工作条例》规定，公文的成文日期通常以机关负责人签发的日期为准。联合行文则以最后签发机关负责人签发的日期为准，经会议讨论通过的以通过日期为准。"},{"id":212,"type":"single","question":"公文行文规范包括三个方面的内容，其完整表述是（ ）。","answer":"D","options":{"A":"行文关系、行文方向、行文方式","B":"行文方向、行文方式、行文规则","C":"行文关系、行文方向与方式、行文规则","D":""},"explanation":"公文行文规范是确保公文有序运行的重要制度，主要包括三个方面：行文关系（根据隶属关系和职权范围确定的行文主体之间的关系）、行文方向与方式（上行、下行、平行的方向及具体方式）和行文规则（一文一事、少而精等具体规则）。D选项完整表述了这三方面内容。"}],"multis":[{"id":1,"type":"multi","question":"党政机关公文的时效性特点包含下列哪些方面（ ）。","answer":"ABD","options":{"A":"当代性","B":"及时性","C":"延时性","D":"效用的期限性 ABD"},"explanation":"公文时效性要求制作迅速（A✓），传递及时（B✓）和办理及时（D✓），以确保公文在有效时间内发挥作用。而'收发频繁'（C✗）描述的是公文处理的工作量特征，并非时效性的内涵。时效性强调的是时间效率，而非收发频次。"},{"id":2,"type":"multi","question":"我国现行的关于公文处理的规范性文件包括（ ）。","answer":"BD","options":{"A":"《中国共产党机关公文处理办法》","B":"《党政机关公文处理工作条例》","C":"《国家行政机关公文处理办法》","D":"《党政机关公文格式》 BD"},"explanation":"公文处理工作具有鲜明的政治性（A✓），因为公文体现党和国家的方针政策；具有严格的规范性（B✓），必须按《党政机关公文处理工作条例》执行；具有服务性（C✓），为各级机关公务活动服务；具有时效性（D✓），要求及时处理。四项均为公文处理工作的基本特点。"},{"id":3,"type":"multi","question":"按照公文内容的性质与作用，可以将公文分为（ ）。","answer":"ABCD","options":{"A":"指挥性公文","B":"规范性公文","C":"报请性公文","D":"知照性公文 ABCD"},"explanation":"命令（A✓）和决定（B✓）均由上级机关向下级机关制发，属于下行文。函（C✗）适用于不相隶属机关之间商洽工作、询问和答复问题，属于平行文。请示（D✗）适用于向上级机关请求指示和批准，属于上行文。"},{"id":4,"type":"multi","question":"公文写作之前要（ ）。","answer":"AC","options":{"A":"明确行文目的","B":"向领导请示写法","C":"确定使用的文种","D":"选择适当的语言 AC"},"explanation":"公文写作前应明确行文目的（A✓），即为什么要发文；同时确定使用的文种（C✓），因为不同文种适用于不同情形。'向领导请示写法'（B✗）并非必要程序；'选择适当的语言'（D✗）属于写作过程中的具体操作，非写作前需要完成的事项。"},{"id":5,"type":"multi","question":"关于公文标题，下列说法错误的是（ ）。","answer":"BC","options":{"A":"公文标题包括发文机关名称、事由和文种三要素。","B":"公文标题位用 3 号方正 小标宋 。","C":"标题中不准使用任何标点符号。","D":"标题可分多行居中排布，回行时应做到词意完整、间距恰当。 BC"},"explanation":"公文写作的四大构成要素是主题（A✓）、材料（B✓）、结构（C✓）和语言（D✓）。主题是公文的灵魂，材料是基础，结构是骨架，语言是载体，四者缺一不可，共同构成公文的完整形态。"},{"id":6,"type":"multi","question":"下列文种属于上行文的是（ ）。","answer":"AB","options":{"A":"请示","B":"报告","C":"函","D":"通报 AB"},"explanation":"公文选材应围绕主题进行（A✓），使材料服务于主旨表达；选材要典型（B✓），以最具代表性的材料说明问题；选材要真实（C✓），确保公文可信可靠；选材要新颖（D✓），反映新情况新问题。四项原则缺一不可。"},{"id":7,"type":"multi","question":"下列文种属于下行文的有（ ）。","answer":"ABD","options":{"A":"决定","B":"批复","C":"报告","D":"通告 ABD"},"explanation":"公文结构要求严谨（A✓），逻辑严密、无懈可击；要求自然（B✓），层次分明、顺理成章；要求完整（C✓），首尾俱全、无残缺遗漏；要求统一（D✓），各部分协调一致、风格统一。四项均为公文结构的基本要求。"},{"id":8,"type":"multi","question":"关于抄送，下列说法正确的有（ ）。","answer":"ABD","options":{"A":"越级行文，应当同时抄送被越过的机关。","B":"被双重领导时，发文机关原则上主送一个上级关系，必要时抄送另一上级机关。","C":"抄送可以是上级机关、同级机关、下级机关。","D":"下行文时，主送受理机关，根据需要抄送相关机关。重要行文应当同时抄送发文机关的直接上级机关。 ABD"},"explanation":"公文常用的表达方式为叙述（A✓），用于陈述事实、交代情况；说明（B✓），用于解释事理、介绍方法；议论（D✓），用于论证观点、阐明道理。抒情（C✗）具有主观性和情感性，不符合公文客观、庄重的语言风格，故不用于公文写作。"},{"id":9,"type":"multi","question":"公文办理包括（ ）。","answer":"ABD","options":{"A":"收文办理","B":"发文办理","C":"来文办理","D":"整理归档 ABD"},"explanation":"公文语言要求准确（A✓），表意精确、无歧义；简明（B✓），言简意赅、要言不烦；平实（C✓），语言朴实、实事求是；庄重（D✓），严肃端庄、规范得体。四项是对公文语言的基本要求，缺一不可。"},{"id":10,"type":"multi","question":"下列事项能够制发通知的有（ ）。","answer":"BC","options":{"A":"某局面向社会招录大学生","B":"某厅向下级部门布置明年工作任务","C":"省政府批转并转发财政厅有关职工福利发放标准的文件","D":"两单位之间商洽某具体事项 BC"},"explanation":"通告正文一般包括通告缘由（A✓），说明发布通告的目的和依据；通告事项（B✓），具体列出需要遵守或知晓的内容；通告结语（C✓），如'特此通告'等。附件说明（D✗）并非通告正文的必要组成部分，通告通常不附附件。"},{"id":11,"type":"multi","question":"下列文种种哪些属于上行文？（ ）","answer":"AD","options":{"A":"请示","B":"通告","C":"批复","D":"报告 AD"},"explanation":"通知正文通常由通知缘由（B✓）、通知事项（C✓）和通知结语（D✓）三部分组成。通知缘由说明行文原因和目的，通知事项列出具体要求与内容，通知结语如'特此通知'。'通知人员'（A✗）不是通知正文的规范组成部分。"},{"id":12,"type":"multi","question":"下列事项中，可以通告行文的有（ ）。","answer":"CD","options":{"A":"某市财政局拟行文召开各区、县财政局局长会议","B":"中国人民银行告知关于国家货币出入境限额","C":"某县水务局将告知纳税人限期到指定地点进行纳税登记","D":"某市城管委告知公众二环路东三段占道房屋拆迁事项 CD"},"explanation":"公文格式由版头（B✓）、主体（C✓）和版记（D✓）三大部分组成。版头包括发文机关标志、发文字号等；主体包括标题、正文等；版记包括抄送机关、印发机关等。'发文机关'（A✗）是具体要素而非格式组成部分的名称。"},{"id":13,"type":"multi","question":"意见分为（ ）三种。","answer":"ABC","options":{"A":"要求下级贯彻执行的意见","B":"请求上级批转的意见","C":"供平级或不相隶属机关参考的意见","D":"对重要问题提出见解和处理办法的意见 ABC"},"explanation":"综合性总结正文应包含基本情况（A✓），概述工作背景和总体情况；成绩和经验（B✓），总结取得的成果和有效做法；问题和教训（C✓），分析存在的不足和应吸取的教训；今后打算（D✓），提出改进措施和未来计划。四项均为必备内容。"},{"id":14,"type":"multi","question":"《第十二届全国人民代表大会第四次会议关于最高人民法院工作报告的决议》和中国共产党第十八届中央委员会第六次全体会议《关于召开党的第十九次全国代表大会的决议》分别属于以下哪种类型的决议（ ）。","answer":"AB","options":{"A":"审批性决议","B":"专门事项性决议","C":"决策性决议","D":"公布号召性决议 AB"},"explanation":"党政机关公文具有法定性（A✓），由法定作者制发并具有法定效力；规范性（B✓），有统一的格式和行文规则；程序性（C✓），须履行严格的制发程序。文学性（D✗）不是公文的特点，公文语言要求平实庄重，与文学作品追求的艺术性不同。"},{"id":15,"type":"multi","question":"报告的结束语有（ ）。","answer":"BCE","options":{"A":"以上报告，请批复","B":"以上报告，请审阅","C":"特此报告","D":"特此报请审批 E 无结语 BCE"},"explanation":"计划类文书的构成要素包括目标（A✓），明确要完成的任务和达到的标准；措施（B✓），说明实现目标的方法和途径；步骤（C✓），安排完成任务的先后顺序和时限。总结（D✗）是计划执行后的回顾性文书，不属于计划类文书的构成要素。"},{"id":16,"type":"multi","question":"情报报告的内容包括（ ）。","answer":"BC","options":{"A":"经常性的常规工作情况","B":"偶发性的特殊情况","C":"重要的社情、民情、突发事件","D":"对上级机关的查问、提问做出的答复 BC"},"explanation":"《党政机关公文处理工作条例》规定，公文处理工作应当坚持实事求是（A✓）、准确规范（B✓）、精简高效（C✓）、安全保密（D✓）的原则。四项原则贯穿公文处理全过程，是公文处理工作的基本遵循。"},{"id":17,"type":"multi","question":"报告的注意事项是（ ）。","answer":"ACD","options":{"A":"报告的事项真实","B":"报告的事项要典型","C":"报告时间及时","D":"报告的主送机关为上级机关 ACD"},"explanation":"公文写作必须符合国家法律法规（A✓），确保合法性；坚持实事求是（B✓），反映真实情况；结构严谨（C✓），层次清晰、逻辑严密；语言规范（D✓），使用规范的公文用语。四项是对公文写作的基本要求。"},{"id":18,"type":"multi","question":"报告可用于陈述的事项有（ ）。","answer":"CD","options":{"A":"向下级或有关方面介绍工作情况","B":"答复群众的查询、提问","C":"向上级汇报工作，反映情况","D":"向上级提出今后工作整改措施 CD"},"explanation":"公文按行文关系可分为上行文（A✓），下级向上级报送；下行文（B✓），上级向下级发送；平行文（C✓），同级或不相隶属机关之间行文。'内部文'（D✗）是按公文处理范围划分的概念，并非按行文关系分类的结果。"},{"id":19,"type":"multi","question":"下列关于工作报告与情况报告的区别，说法正确是（ ）。","answer":"AC","options":{"A":"前者多为经常性、常规性的工作，后者多为偶发性的特殊情况","B":"前者内容多不确定，后者内容比较稳定","C":"前者有不同程度的说理，事与理结合，后者重在叙述、说明情况","D":"前者无固定汇报时间，后者汇报时间固定 AC"},"explanation":"公文版头要素包括份号（A✓），用于涉密公文管理；密级和保密期限（B✓），标注秘密等级；紧急程度（C✓），标注公文的紧急时限；发文字号（D✓），是公文的重要标识。四项均属于版头部分的构成要素。"},{"id":20,"type":"multi","question":"下列对“报告”与“请示”文种表述准确的是（ ）。","answer":"ABD","options":{"A":"报告有时一文多事，请示只能一文一事","B":"请示发出后会得到上级回应：报告发出后不一定得到上级表态","C":"报告、请示都须定期上报","D":"报告中不能夹带请示事项 ABD"},"explanation":"规范公文格式可以保证公文质量（A✓），使内容完整规范；提高办文效率（B✓），统一格式便于阅读和处理；便于公文的归档管理（C✓），标准格式利于存档检索；维护公文的严肃性（D✓），体现公文的权威和规范。四项均为规范格式的重要作用。"},{"id":21,"type":"multi","question":"以下几种机关之间，因工作需要往来公文，可以使用函的有（ ）。","answer":"ABD","options":{"A":"重庆雅士利建筑公司、重庆理工大学","B":"市财政局、市税务局","C":"省人民政府、省教育厅","D":"县公安局、乡人民政府 ABD"},"explanation":"公文审核的重点包括内容（A✓），审核政策依据、事实数据等是否准确；格式（B✓），审核格式要素是否完整规范；文字（C✓），审核语言表达是否通顺准确。装订（D✗）属于公文整理加工的物理环节，不属于审核工作的重点内容。"},{"id":22,"type":"multi","question":"下列事项中，哪些可以用通知来行文（ ）。","answer":"BCD","options":{"A":"国务院颁布一项行政法规","B":"重庆市政府拟批转卫生健康局《进一步加强新冠疫情防控力度的意见》","C":"成都市委拟向所属各级党组织布置学习××同志的“七一”讲话的有关事宜","D":"湖北省人民政府计划召开水利建设工作会，需告知相关单位事先做好准备 BCD"},"explanation":"简报具有'快'（A✓）的特点，采编迅速、传递及时；'新'（B✓），反映新情况、新问题、新经验；'实'（C✓），内容真实可靠、不虚构；'短'（D✓），篇幅短小、简明扼要。'快、新、实、短'是对简报特点的经典概括，四项全对。"},{"id":23,"type":"multi","question":"警察学院 2020 级学生王一波路见歹徒行凶抢劫挺身而出，后协助公安机关抓获歹徒。学院党委经研究决定通报表彰该学生，并要求院办秘书起草这份通报。请问，该通报的写作内容应包括（ ）。","answer":"ACD","options":{"A":"号召向王一波学习","B":"分析当前社会治安形势","C":"宣布学院党委表彰决定","D":"介绍王一波的先进事迹 ACD"},"explanation":"收文办理的主要程序包括签收和登记（A✓），确认来文并登记信息；初审和承办（B✓），审核公文并落实办理；传阅（C✓），将公文分送相关人员阅知；催办和答复（D✓），督促办理并反馈结果。四项程序依次衔接，构成完整的收文处理流程。"},{"id":25,"type":"multi","question":"某公司计划向重庆大学招聘毕业生，在其商洽函里，应该出现哪些内容？（ ）","answer":"ABCD","options":{"A":"对应聘者的具体要求","B":"简述公司对于相关人才的需要","C":"公司联系人联系方式、邮箱","D":"特此函达，请予函复为盼。 ABCD"},"explanation":"命令具有强制性（A✓），受令方必须无条件执行；权威性（B✓），由国家权力机关或领导人制发；约束性（C✓），对相关单位和人员具有法律或行政约束力。随意性（D✗）与命令的严肃性、权威性相悖，不是命令的特点。"},{"id":26,"type":"multi","question":"以下哪些语句往往用于函结尾处以表示尊重对方（ ）。","answer":"AD","options":{"A":"“不知贵方意见如何，请函告”","B":"“特此批复”","C":"“请参照以上意见尽快执行”","D":"“请予以接洽是荷” AD"},"explanation":"公文的结尾形式丰富多样，包括总结式（A✓），对全文内容进行概括总结；号召式（B✓），发出号召、提出要求；说明式（C✓），补充说明相关事项；期望式（D✓），表达期望或恳请。四种结尾方式均可根据文种和行文目的灵活选用。"},{"id":27,"type":"multi","question":"总结与计划的区别是（ ）。","answer":"ABCD","options":{"A":"计划是事前就完成某项任务所做出的安排","B":"总结和计划是一项工作的两个方面","C":"总结还可以作为制订下一阶段计划的依据","D":"总结是事后对计划执行情况的总检查、总评价 ABCD"},"explanation":"主送机关是公文的主要受理机关，可以是上级机关（A✓），如下行文的主送对象；下级机关（B✓），如上行的主送对象；平级机关（C✓），如平行文的主送对象。社会公众（D✗）不是公文的主送对象，公告、通告等面向公众的文种一般不标注主送机关。"},{"id":28,"type":"multi","question":"下列文种属于计划范畴的有（ ）。","answer":"ABCD","options":{"A":"规划","B":"纲要","C":"预测","D":"方案 ABCD"},"explanation":"决定适用于重大事项的决策和部署（A✓）；命令适用于发布行政法规和规章（B✓）；公告适用于向国内外宣布重要事项（C✓）；通告适用于在一定范围内公布应当遵守的事项（D✓）。四项均准确描述了各文种的适用范围，符合《党政机关公文处理工作条例》的规定。"},{"id":29,"type":"multi","question":"下列党政机关公文中，属于下行文的有（ ）。","answer":"AB","options":{"A":"决议","B":"通知","C":"报告","D":"意见 AB"},"explanation":"公文写作具有实用性（A✓），直接为公务活动服务；真实性（B✓），内容必须客观真实；规范性（C✓），格式和语言有严格规范。艺术性（D✗）不是公文写作的特点，公文写作追求准确简明、平实庄重，不以艺术表现和审美追求为目的。"},{"id":30,"type":"multi","question":"关于党政机关公文规范，下列说法正确的有（ ）。","answer":"ABCD","options":{"A":"从语言特点上，公文语言强调简明，规范，至今依然保留不少文言词汇。","B":"文种方面常见的错误，一是缺少文种；二是自制文种，使用非法定文种。","C":"公文标题的拟制，事由一般为动宾短语，减少不必要的修饰词、限定词，虚词。","D":"层次是文章结构的基本单位，是作者思路的展开和文章思想内容的表现次序。 ABCD"},"explanation":"公文处理工作的基本要求是及时（A✓），不拖延、不积压；准确（B✓），内容准确、程序规范；安全（C✓），确保公文不失密、不丢失；高效（D✓），以最高效率完成处理。四项要求相互关联，共同保障公文处理工作的质量与效率。"},{"id":31,"type":"multi","question":"公文提纲的内容包括（ ）。","answer":"ABC","options":{"A":"公文标题","B":"公文开头","C":"表述层次及论点、论据、字数安排","D":"结尾 ABC"},"explanation":"公文正文中层次序数的规范使用顺序为：第一层用'一、二、三'（A✓），第二层用'（一）（二）（三）'（B✓），第三层用'1. 2. 3.'（C✓），第四层用'（1）（2）（3）'（D✓）。须严格遵循规范层级顺序。"},{"id":32,"type":"multi","question":"公文写作的基本要求有（ ）。","answer":"ABC","options":{"A":"符合党、国家的路线、 方针、 政策和法律法规","B":"一文一事，中心明确","C":"用语庄严、简明、通顺","D":"为使各方面了解情况，多印发文件 E 格式不必强求一致 ABC"},"explanation":"公文标题由发文机关（A✓）、事由（B✓）和文种（C✓）三要素组成。签发人（D✗）是版头部分的要素，用于上行文标注签发人姓名，不属于标题的组成部分。"},{"id":33,"type":"multi","question":"具备法定效力的公文稿本有（ ）。","answer":"ACDE","options":{"A":"副本","B":"草稿","C":"定稿","D":"试行本 E 暂行本 ACDE"},"explanation":"公文版头部分要素包括发文机关标志（A✓）、发文字号（B✓）、签发人（C✓）、份号（D✓）。四项均为版头部分的重要要素。"},{"id":34,"type":"multi","question":"选定公文种类主要的原则方法是（ ）。","answer":"ABD","options":{"A":"考虑行文的具体需要","B":"考虑本单位的权限","C":"考虑公文撰拟者的写作水平","D":"考虑行文走向 ABD"},"explanation":"公文处理工作主要包括公文拟制（A✓）、公文办理（B✓）、公文管理（C✓）和公文归档（D✓）。四项涵盖了公文从生成到归档的全过程。"},{"id":35,"type":"multi","question":"国家对公文的格式有具体的要求其特点有（ ）。","answer":"ABC","options":{"A":"结构完整","B":"规范性","C":"相对确定性","D":"灵活性 ABC"},"explanation":"公文具有领导指导作用（A✓）、行为规范作用（B✓）、凭证依据作用（C✓）和联系沟通作用（D✓）。四项均为公文的基本作用。"},{"id":36,"type":"multi","question":"规定公文的统一规范格式，其目的在于（ ）。","answer":"ACD","options":{"A":"维护公文的严肃性","B":"维护公文的有效性","C":"维护公文的权威性","D":"维护公文的准确性 ACD"},"explanation":"通知的种类包括事务性通知（A✓）、指示性通知（B✓）、颁布性通知（C✓）和转发性通知（D✓）。四种类型覆盖了通知的主要使用场景。"},{"id":37,"type":"multi","question":"主送机关有以下几种（ ）。","answer":"ABC","options":{"A":"上级机关","B":"下级机关","C":"平行机关","D":"不相隶属机关 ABC"},"explanation":"请示写作必须坚持一文一事（A✓）、理由充分（B✓）、逐级请示（C✓）、不要多头请示（D✓）。四项要求均为确保请示得到有效处理的基本规范。"},{"id":38,"type":"multi","question":"通报有以下特点（ ）。","answer":"ABC","options":{"A":"具有较强的时效性","B":"让事实和数据说话， 而不过多地阐发和论证道理","C":"具有教育性质，主要起宣传教育、沟通情况和交流经验的作用","D":"内容单纯，行文简便 ABC"},"explanation":"报告的正文一般包括报告缘由（A✓）、报告事项（B✓）、结语（C✓）和附件说明（D✓）。四项均为报告正文的组成部分。"},{"id":39,"type":"multi","question":"通报按其内容性质划分，可分为（ ）。","answer":"ABD","options":{"A":"表彰性通报","B":"批评性通报","C":"指示性通报","D":"情况通报 ABD"},"explanation":"总结具有自我性（A✓）、回顾性（B✓）、客观性（C✓）和经验性（D✓）。四项均是总结这一文体的基本特点。"},{"id":40,"type":"multi","question":"通报的总体结构包括（ ）。","answer":"AC","options":{"A":"标题","B":"主送机关","C":"正文","D":"通报的日期 AC"},"explanation":"公文语言具有准确（A✓）、简洁（B✓）、庄重（C✓）和规范（D✓）的特点。四项是公文语言的主要特点。"},{"id":41,"type":"multi","question":"通报与通知的区别是（ ）。","answer":"BC","options":{"A":"通报用来传达重要精神或情况","B":"通报的事例典型，情况重要，具有较大影响","C":"通报的目的是引起读者的广泛注意和从中受到教育，而不着重要求予以具体办理和执行","D":"通知有主送机关通报没有主送机关 BC"},"explanation":"根据行文方向，公文可分为上行文（A✓）、下行文（B✓）和平行文（C✓）。'综合行文'（D✗）不是按行文方向划分的标准类别。"},{"id":42,"type":"multi","question":"批复具有以下特点（ ）。","answer":"ABC","options":{"A":"权威性","B":"针对性","C":"被动性","D":"公开性 ABC"},"explanation":"版头部分要素包括发文机关标志（A✓）、发文字号（B✓）、签发人（C✓）和密级（D✓）。四项要素均在版头区域呈现。"},{"id":43,"type":"multi","question":"下列有关说法，能用来说明批复有明确针对性的是（ ）。","answer":"AB","options":{"A":"批复只印发给申报请示的单位及有关单位","B":"批复的内容只答复请示的具体事项","C":"批复的内容应予认真遵守与执行","D":"批复的开头和结尾要与请示的标题与发文字号相互照应 AB"},"explanation":"抄送机关可以是上级机关（A✓）、下级机关（B✓）和平级机关（C✓）。'社会团体'（D✗）表述笼统不准确，抄送机关应具体明确为相关机关或单位。"},{"id":44,"type":"multi","question":"批复在制发前需进行认真的调查，调查的内容包括（ ）。","answer":"ACD","options":{"A":"查阅有关的规定和指示","B":"调阅前案处理的材料","C":"与内容涉及到的有关部门协商","D":"调查研究请示的理由、事项与具体要求 ACD"},"explanation":"《党政机关公文处理工作条例》规定，公文处理工作应当坚持实事求是（A✓）、准确规范（B✓）、精简高效（C✓）、安全保密（D✓）四项原则。"},{"id":45,"type":"multi","question":"下列各具体事项可以使用请示这一文种的有（ ABD ）。","answer":"D","options":{"A":"请求协调与帮助解决本机关无法解决的困难与问题","B":"请求审核批准或批转本机关制定的法规、规章或决定、报告等。","C":"请求协调与解决本机关无法解决的困难和问题","D":""},"explanation":"公文写作对材料的要求包括真实（A✓）、典型（B✓）、新颖（C✓）和充分（D✓）。四项要求缺一不可。"},{"id":46,"type":"multi","question":"请示的主送对象可以是（ ）。","answer":"CD","options":{"A":"有商洽必要的平行机关","B":"需请求其批准的不相隶属机关","C":"直属的上级领导机关","D":"上级业务主管部门 CD"},"explanation":"党政机关公文由法定作者制发（A✓），具有法定权威性（B✓），具有规范体式（C✓），具有法定效力（D✓）。四项均为党政机关公文的基本特点。"},{"id":47,"type":"multi","question":"请示的主送对象可以是（ ）。","answer":"ABD","options":{"A":"各机关对于自己无权决定或难以处理的问题均应制发请示公文","B":"请示这类公文要求上级回复， 故应与工作报告相区别","C":"某机关对于后勤的安排， 因几位领导意见不一致， 此时应该制发请示","D":"请示不能使用议论的表达方式 ABD"},"explanation":"公文语言要求准确（A✓）、简明（B✓）、平实（C✓）、庄重（D✓）。四项是对公文语言的全面要求，是公文写作必须遵循的语言规范。"},{"id":48,"type":"multi","question":"分办的主要依据是文件的性质、重要程度、（ ）等。","answer":"ABC","options":{"A":"涉密程度","B":"缓急时限要求","C":"内容所涉及的职责范围","D":"党和政府的方针政策 ABC"},"explanation":"公文标题的构成要素包括发文机关（A✓）、事由（B✓）和文种（C✓）。签发人（D✗）属于版头要素，不是标题的组成部分。"},{"id":49,"type":"multi","question":"签收文件的工作由（ ）完成。","answer":"ABC","options":{"A":"专职外收发人员","B":"兼职外收发人员","C":"通讯人员","D":"各机关的领导、负责人 ABC"},"explanation":"公文的成文日期一般以负责人签发日期为准（A✓）；联合行文以最后签发机关负责人签发日期为准（B✓）；经会议讨论通过的以通过日期为准（C✓）；电报以发出日期为准（D✓）。四种情况分别对应不同的确定规则。"},{"id":50,"type":"multi","question":"公文主题的基本要求是（ ）。","answer":"AB","options":{"A":"突出","B":"简明","C":"单一","D":"生动 AB"},"explanation":"公文眉首（版头）部分包括份号（A✓）、密级（B✓）、紧急程度（C✓）和发文字号（D✓）。四项均属于眉首部分的组成要素。"},{"id":51,"type":"multi","question":"我国法定的公布性文件包括（ ）。","answer":"BD","options":{"A":"通知","B":"通告","C":"通报","D":"公告 BD"},"explanation":"公文正文层次序数第一层用'一、'（A✓），第二层用'（一）'（B✓），第三层用'1.'（C✓），第四层用'（1）'（D✓）。不可颠倒使用。"},{"id":52,"type":"multi","question":"下面几种说法中不正确的是（ ）。","answer":"AD","options":{"A":"接受抄送的机关可以向其他机关抄送","B":"在公文中， 完全句是主要的， 只有在为使语言简洁且又不会对语义造成损伤的情况下才使用省略句","C":"向上级机关请求批示或批准宜用‘请示’ 而不用‘报告’","D":"主送机关必须是受文机关中级别层次高的机关，抄送机关则处须是其中级别层次低的机关 AD"},"explanation":"《党政机关公文处理工作条例》规定，公文处理工作应当遵循实事求是（A✓）、精简高效（B✓）、准确规范（C✓）、安全保密（D✓）的原则。"},{"id":53,"type":"multi","question":"可用来签批和书写公文的字迹材料有（ ）。","answer":"ABC","options":{"A":"墨汁","B":"碳素墨水","C":"蓝黑墨水","D":"纯蓝墨水 ABC"},"explanation":"公文密级分为绝密、机密、秘密三级（A✓）；涉密公文应当标注密级（B✓）；密级应标注在文件首页（C✓）。'所有公文都应标注密级'（D✗）错误，非涉密公文无需标注。"},{"id":54,"type":"multi","question":"选用公文文种，主要依据（ ）。","answer":"ABCD","options":{"A":"规范性","B":"工作关系","C":"职权","D":"行文目的和要求 ABCD"},"explanation":"通知和通告的适用范围不同（A✓）；行文对象不同（B✓）；格式要求不同（C✓）；发布方式不同（D✓）。四项均为二者的重要区别。"},{"id":55,"type":"multi","question":"请示的结构由以下选项的哪几部分组成（ ）。","answer":"ACD","options":{"A":"标题，写明制发机关名称、事由与文种","B":"主送机关","C":"正文，包括请示理由、 请示事项及请示的具体要求","D":"制发机关名称与成文日期 ACD"},"explanation":"公文语言的基本特征包括准确（A✓）、庄重（B✓）、简洁（C✓）和平实（D✓）。四项是对公文语言特征的全面概括。"},{"id":56,"type":"multi","question":"关于请示的特点，说法正确的是（ ）。","answer":"AB","options":{"A":"请示的内容必须是属于本机关职权范围内无权或确实难以处理的问题与事项","B":"使用范围广泛","C":"具有执行性","D":"有较强的时效性， 强调及时快捷 AB"},"explanation":"《党政机关公文处理工作条例》规定，党政机关公文处理工作的基本原则包括实事求是（A✓）、准确规范（B✓）、精简高效（C✓）、安全保密（D✓）。"},{"id":57,"type":"multi","question":"下列陈述呈请性公文不得夹带请示事项的有（ ）。","answer":"AC","options":{"A":"工作报告","B":"请示","C":"答复询问的报告","D":"批复 AC"},"explanation":"公文写作中材料的选择应围绕主题（A✓）、真实可靠（B✓）、典型生动（C✓）、新颖适时（D✓）。四项是公文选材应当遵循的基本原则。"},{"id":58,"type":"multi","question":"下列说法符合工作报告写作要求的是（ ）。","answer":"ABCD","options":{"A":"适宜采用概括叙述的表达方式，避免描述事情的细枝末节或罗列数字","B":"中心明确，重点突出","C":"报告内容应有新意","D":"点面结合，实事求是 ABCD"},"explanation":"公文处理工作主要包括公文拟制（A✓）、公文办理（B✓）、公文管理（C✓）和公文归档（D✓）。四项涵盖了公文从拟制到归档的完整生命周期。"},{"id":59,"type":"multi","question":"在撰写总结报告正文的开头部分时通常采用何种方法（ ）。","answer":"CD","options":{"A":"介绍工作的成绩及工作进程","B":"叙述占有的材料","C":"概述基本情况","D":"简要揭示总结的主题， 为进一步展开叙述奠定基础 CD"},"explanation":"公文正文写作要求符合国家法律法规（A✓）；情况确实、观点明确（B✓）；结构严谨、条理清楚（C✓）。'可以使用夸张等修辞手法'（D✗）错误，公文语言要求平实准确。"},{"id":60,"type":"multi","question":"在撰写总结报告正文主体部分时通常采用何种（ ）。","answer":"ABCD","options":{"A":"划分工作情况与经验体会两大部分","B":"按时间的顺序安排层次","C":"按总结内容的逻辑关系，分设若干问题，接问题介绍工作情况，写明经验（教训）","D":"按工作发展阶段的先后顺序安排层次 ABCD"},"explanation":"撰写总结报告正文主体部分可采用多种结构：划分工作情况与经验体会两大部分（A✓）；按时间顺序安排层次（B✓）；按问题分设层次（C✓）；按工作发展阶段先后顺序（D✓）。四种结构方式均可使用。"}]};
+const ALL_QUESTIONS = [];
+
+// ========== STATE ==========
+let state = {
+  mode: 'all',         // 'all', 'judgment', 'single', 'multi'
+  currentIndex: 0,
+  answered: false,
+  userAnswer: null,    // true/false for judgment, 'A'-'D' for single, array for multi
+  multiSelections: [],
+  history: {},         // { "type-id": { correct: bool, userAnswer: any, count: 1 } }
+  wrongQuestions: {},  // { "type-id": { ... } }
+  bookmarked: {},      // { "type-id": true }
+  totalAnswers: 0,     // total answer submissions
+  shuffled: [],
+  loopMode: false,     // loop back to start after finishing
+};
+
+// ========== INIT ==========
+function init() {
+  state.sessionStart = Date.now();
+  setInterval(() => {
+    if (document.getElementById('panelStats')?.classList.contains('active')) renderStats();
+  }, 1000);
+  if (QUESTION_DATA) {
+    buildQuestions(QUESTION_DATA);
+  } else {
+    alert('题目数据加载失败，请重新下载完整版文件');
+  }
+}
+
+function buildQuestions(data) {
+  const mapType = { judgments: 'judgment', singles: 'single', multis: 'multi' };
+  for (const [key, type] of Object.entries(mapType)) {
+    for (const q of data[key] || []) {
+      ALL_QUESTIONS.push({
+        ...q,
+        uid: `${type}-${q.id}`,
+        typeLabel: type === 'judgment' ? '判断题' : type === 'single' ? '单选题' : '多选题',
+      });
+    }
+  }
+  loadState();
+  updateShuffle();
+  renderQuestion();
+  updateStats();
+}
+
+// ========== SHUFFLE ==========
+function updateShuffle() {
+  let pool = ALL_QUESTIONS;
+  if (state.mode !== 'all') pool = ALL_QUESTIONS.filter(q => q.type === state.mode);
+  // Sort: unanswered first, then by original order
+  const unanswered = pool.filter(q => !state.history[q.uid]);
+  const answered = pool.filter(q => state.history[q.uid]);
+  state.shuffled = [...unanswered, ...answered];
+  // Reset index if out of bounds
+  if (state.currentIndex >= state.shuffled.length) state.currentIndex = 0;
+  if (state.shuffled.length === 0) state.currentIndex = 0;
+}
+
+// ========== NAVIGATOR ==========
+function renderNav() {
+  const nav = document.getElementById('qNav');
+  if (!nav) return;
+  const qs = state.shuffled;
+  const total = qs.length;
+  if (total <= 1) { nav.innerHTML = ''; return; }
+
+  let html = '<div class="nav-title">📌 题目导航</div>';
+  for (let i = 0; i < total; i++) {
+    const q = qs[i];
+    const hist = state.history[q.uid];
+    let cls = '';
+    if (i === state.currentIndex) cls = 'current';
+    else if (hist) cls = hist.correct ? 'correct' : 'wrong';
+    html += `<div class="nav-dot ${cls}" onclick="jumpTo(${i})">${i + 1}</div>`;
+  }
+  nav.innerHTML = html;
+}
+
+function jumpTo(idx) {
+  state.currentIndex = idx;
+  renderQuestion();
+}
+
+// ========== RENDER QUESTION ==========
+function renderQuestion() {
+  const area = document.getElementById('questionArea');
+  const qs = state.shuffled;
+
+  if (qs.length === 0) {
+    area.innerHTML = `<div class="done-msg"><div class="icon">🎉</div>
+      <h2>没有题目</h2><p>当前模式下没有可用题目</p></div>`;
+    updateMiniStats();
+    return;
+  }
+
+  if (state.currentIndex >= qs.length) {
+    // All done
+    if (state.loopMode) {
+      // In loop mode: restart from beginning, preserve history
+      state.currentIndex = 0;
+      renderQuestion();
+      updateStats();
+      return;
+    }
+    area.innerHTML = `<div class="done-msg"><div class="icon">🎉</div>
+      <h2>全部完成！</h2><p>你已经刷完了所有题目</p>
+      <button class="next-btn" onclick="resetAll()">🔄 重新开始</button>
+      <div style="margin-top:12px"><button class="loop-toggle active" onclick="toggleLoop();resetAll()" style="font-size:0.85rem;padding:10px 20px">
+        <span class="indicator"></span> 开启循环刷题模式
+      </button></div></div>`;
+    updateMiniStats();
+    updateProgressRing();
+    return;
+  }
+
+  const q = qs[state.currentIndex];
+  state.answered = false;
+  state.userAnswer = null;
+  state.multiSelections = [];
+
+  const totalInMode = ALL_QUESTIONS.filter(x => state.mode === 'all' || x.type === state.mode).length;
+  const pct = (state.currentIndex / Math.max(qs.length, 1)) * 100;
+  const isJudgment = q.type === 'judgment';
+  const isMulti = q.type === 'multi';
+  const typeClass = q.type;
+
+  let optionsHtml = '';
+  if (isJudgment) {
+    optionsHtml = `<div class="judgment-opts">
+      <button class="opt-btn" data-val="true" onclick="answerJudgment(true)">
+        <span class="opt-label circle">✓</span> 正确 <span style="font-size:0.7rem;color:var(--text-secondary);margin-left:4px">(1)</span>
+      </button>
+      <button class="opt-btn" data-val="false" onclick="answerJudgment(false)">
+        <span class="opt-label circle">✗</span> 错误 <span style="font-size:0.7rem;color:var(--text-secondary);margin-left:4px">(2)</span>
+      </button>
+    </div>`;
+  } else if (isMulti) {
+    const letters = ['A','B','C','D'];
+    optionsHtml = `<div class="options" id="multiOptions">`;
+    for (const letter of letters) {
+      const optText = q.options && q.options[letter] ? q.options[letter] : '';
+      if (!optText) continue;
+      optionsHtml += `<button class="opt-btn" data-val="${letter}" onclick="toggleMulti('${letter}')">
+        <span class="opt-label square">${letter}</span>
+        <span>${optText}</span>
+      </button>`;
+    }
+    optionsHtml += `</div><div class="multi-actions">
+      <button class="clear-btn" onclick="clearMulti()">清空</button>
+      <button class="confirm-btn" id="confirmMulti" disabled onclick="confirmMulti()">确认提交</button>
+    </div>`;
+  } else {
+    // Single
+    const letters = ['A','B','C','D'];
+    optionsHtml = `<div class="options">`;
+    for (const letter of letters) {
+      const optText = q.options && q.options[letter] ? q.options[letter] : '';
+      if (!optText) continue;
+      optionsHtml += `<button class="opt-btn" data-val="${letter}" onclick="answerSingle('${letter}')">
+        <span class="opt-label circle">${letter}</span>
+        <span>${optText}</span>
+      </button>`;
+    }
+    optionsHtml += `</div>`;
+  }
+
+  area.innerHTML = `
+    <div class="q-card" id="qCard">
+      <div class="q-progress">
+        <span class="p-text">${state.currentIndex + 1} / ${qs.length}</span>
+        <div class="p-bar-wrap"><div class="p-bar" style="width:${pct}%"></div></div>
+      </div>
+      <div style="display:flex;align-items:start;justify-content:space-between;gap:8px">
+        <span class="q-type-badge ${typeClass}">${q.typeLabel}</span>
+        <button class="bookmark-btn" id="bookmarkBtn" onclick="toggleBookmark('${q.uid}')" title="收藏此题">${state.bookmarked[q.uid] ? '★' : '☆'}</button>
+      </div>
+      <div class="q-text">${escapeHtml(q.question)}</div>
+      <div id="optionsArea">${optionsHtml}</div>
+      <div id="revealArea"></div>
+      <button class="next-btn" id="nextBtn" onclick="nextQuestion()" disabled>下一题 → <span style="font-weight:400;font-size:0.75rem">(Enter)</span></button>
+      <div class="q-nav" id="qNav"></div>
+    </div>
+  `;
+
+  renderNav();
+
+  updateMiniStats();
+}
+
+// ========== ANSWER HANDLERS ==========
+function answerJudgment(val) {
+  if (state.answered) return;
+  const q = state.shuffled[state.currentIndex];
+  state.answered = true;
+  state.userAnswer = val;
+
+  const correct = val === q.answer;
+  recordAnswer(q, correct, val);
+
+  // Visual feedback
+  const btns = document.querySelectorAll('.judgment-opts .opt-btn');
+  btns.forEach(b => {
+    b.disabled = true;
+    const bVal = b.dataset.val === 'true';
+    if (bVal === q.answer) b.classList.add('correct');
+    if (bVal === val && !correct) b.classList.add('wrong');
+  });
+
+  showReveal(q, correct, val);
+  document.getElementById('nextBtn').disabled = false;
+}
+
+function answerSingle(val) {
+  if (state.answered) return;
+  const q = state.shuffled[state.currentIndex];
+  state.answered = true;
+  state.userAnswer = val;
+
+  const correct = val === q.answer;
+  recordAnswer(q, correct, val);
+
+  const btns = document.querySelectorAll('.options .opt-btn');
+  btns.forEach(b => {
+    b.disabled = true;
+    const bVal = b.dataset.val;
+    if (bVal === q.answer) b.classList.add('correct');
+    if (bVal === val && !correct) b.classList.add('wrong');
+  });
+
+  showReveal(q, correct, val);
+  document.getElementById('nextBtn').disabled = false;
+}
+
+function toggleMulti(letter) {
+  if (state.answered) return;
+  const idx = state.multiSelections.indexOf(letter);
+  if (idx >= 0) state.multiSelections.splice(idx, 1);
+  else state.multiSelections.push(letter);
+
+  document.querySelectorAll('#multiOptions .opt-btn').forEach(b => {
+    b.classList.toggle('selected', state.multiSelections.includes(b.dataset.val));
+  });
+  document.getElementById('confirmMulti').disabled = state.multiSelections.length === 0;
+}
+
+function clearMulti() {
+  if (state.answered) return;
+  state.multiSelections = [];
+  document.querySelectorAll('#multiOptions .opt-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('confirmMulti').disabled = true;
+}
+
+function confirmMulti() {
+  if (state.answered || state.multiSelections.length === 0) return;
+  const q = state.shuffled[state.currentIndex];
+  state.answered = true;
+  state.userAnswer = [...state.multiSelections].sort().join('');
+
+  const correctAns = q.answer.split('').sort().join('');
+  const userAns = state.multiSelections.sort().join('');
+  const correct = userAns === correctAns;
+  recordAnswer(q, correct, state.multiSelections.join(''));
+
+  // Reveal
+  const btns = document.querySelectorAll('#multiOptions .opt-btn');
+  btns.forEach(b => {
+    b.disabled = true;
+    const letter = b.dataset.val;
+    if (q.answer.includes(letter)) b.classList.add('correct');
+    if (state.multiSelections.includes(letter) && !q.answer.includes(letter)) b.classList.add('wrong');
+  });
+  document.getElementById('confirmMulti').disabled = true;
+
+  showReveal(q, correct, state.multiSelections.sort().join(''));
+  document.getElementById('nextBtn').disabled = false;
+}
+
+// ========== RECORD ANSWER ==========
+function recordAnswer(q, correct, userAnswer) {
+  const prev = state.history[q.uid];
+  state.history[q.uid] = { correct, userAnswer, count: (prev ? prev.count + 1 : 1) };
+  state.totalAnswers++;
+  if (!correct) {
+    state.wrongQuestions[q.uid] = { ...q, userAnswer };
+  } else if (state.wrongQuestions[q.uid]) {
+    delete state.wrongQuestions[q.uid];
+  }
+  saveState();
+}
+
+// ========== SHOW REVEAL ==========
+function showReveal(q, correct, userAnswer) {
+  const area = document.getElementById('revealArea');
+  let ansText = '';
+  if (q.type === 'judgment') {
+    ansText = q.answer ? '✓ 正确' : '✗ 错误';
+  } else {
+    ansText = q.answer;
+  }
+
+  const isCorrect = correct;
+  area.innerHTML = `
+    <div class="answer-reveal ${isCorrect ? 'correct' : 'wrong'}">
+      <div class="ans-label">${isCorrect ? '✅ 回答正确！' : '❌ 回答错误'}</div>
+      <div class="ans-text">正确答案：<strong>${ansText}</strong></div>
+    </div>
+    ${q.explanation ? `<div class="explanation"><div class="exp-label">📖 解析</div><div class="exp-text">${q.explanation}</div></div>` : ''}
+  `;
+}
+
+// ========== NAVIGATION ==========
+function nextQuestion() {
+  const qs = state.shuffled;
+  if (state.currentIndex < qs.length - 1) {
+    state.currentIndex++;
+    renderQuestion();
+  } else {
+    const totalUnanswered = ALL_QUESTIONS.filter(q => !state.history[q.uid]).length;
+    if (totalUnanswered > 0) {
+      state.currentIndex++;
+      renderQuestion();
+    } else if (state.loopMode) {
+      // Loop mode: go back to start, preserving history
+      state.currentIndex = 0;
+      renderQuestion();
+    } else {
+      renderQuestion(); // will show "all done"
+    }
+  }
+  updateStats();
+}
+
+function toggleLoop() {
+  state.loopMode = !state.loopMode;
+  document.getElementById('loopToggle').classList.toggle('active', state.loopMode);
+  localStorage.setItem('quiz_loop', state.loopMode ? '1' : '0');
+  // If currently on the "all done" screen, re-render to show loop option
+  renderQuestion();
+}
+
+function resetAll() {
+  if (!confirm('确定要重置所有进度吗？')) return;
+  state.history = {};
+  state.wrongQuestions = {};
+  state.currentIndex = 0;
+  saveState();
+  updateShuffle();
+  renderQuestion();
+  updateStats();
+}
+
+// ========== MODE FILTER ==========
+function setMode(mode) {
+  state.mode = mode;
+  state.currentIndex = 0;
+  document.querySelectorAll('.mode-filter button').forEach(b => {
+    b.classList.toggle('active', b.dataset.mode === mode);
+  });
+  updateShuffle();
+  renderQuestion();
+  updateStats();
+}
+
+// ========== TABS ==========
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
+
+  if (tab === 'stats') renderStats();
+  if (tab === 'errors') renderErrors();
+  if (tab === 'bookmarks') renderBookmarks();
+}
+
+// ========== STATS ==========
+function renderStats() {
+  const total = ALL_QUESTIONS.length;
+  const done = Object.keys(state.history).length;
+  const correct = Object.values(state.history).filter(v => v.correct).length;
+  const wrong = done - correct;
+  const rate = done > 0 ? Math.round((correct / done) * 100) : 0;
+  const histArr = Object.values(state.history);
+  const totalCount = histArr.reduce((s, v) => s + (v.count || 1), 0);
+  const correctCount = histArr.reduce((s, v) => s + (v.correct ? 1 : 0), 0);
+  const avgRate = state.totalAnswers > 0 ? Math.round((correctCount / state.totalAnswers) * 100) : 0;
+  const bookmarked = Object.keys(state.bookmarked).length;
+
+  document.getElementById('stTotal').textContent = total;
+  document.getElementById('stDone').textContent = done;
+  document.getElementById('stCorrect').textContent = correct;
+  document.getElementById('stWrong').textContent = wrong;
+  document.getElementById('stAttempts').textContent = state.totalAnswers;
+  document.getElementById('stAvgRate').textContent = avgRate + '%';
+  document.getElementById('stBookmarked').textContent = bookmarked;
+
+  if (state.sessionStart) {
+    const elapsed = Math.floor((Date.now() - state.sessionStart) / 1000);
+    const h = Math.floor(elapsed / 3600);
+    const m = Math.floor((elapsed % 3600) / 60);
+    const s = elapsed % 60;
+    document.getElementById('stTimer').textContent = (h > 0 ? h + '时' : '') + m + '分' + s + '秒';
+  }
+  updateProgressRing();
+}
+
+function updateProgressRing() {
+  const done = Object.keys(state.history).length;
+  const correct = Object.values(state.history).filter(v => v.correct).length;
+  const rate = done > 0 ? Math.round((correct / done) * 100) : 0;
+  const circumference = 314; // 2 * PI * 50
+  const offset = circumference - (rate / 100) * circumference;
+
+  const ring = document.getElementById('ringCircle');
+  if (ring) {
+    ring.style.strokeDasharray = `${circumference - offset} ${offset}`;
+  }
+  const pct = document.getElementById('ringPct');
+  if (pct) pct.textContent = rate + '%';
+}
+
+// ========== ERRORS ==========
+function renderErrors() {
+  const list = document.getElementById('errorList');
+  const entries = Object.values(state.wrongQuestions);
+
+  if (entries.length === 0) {
+    list.innerHTML = `<div class="err-empty"><div class="icon">🎉</div><p>暂无错题，继续保持！</p></div>`;
+    document.getElementById('errBadge').style.display = 'none';
+    return;
+  }
+
+  document.getElementById('errBadge').textContent = entries.length;
+  document.getElementById('errBadge').style.display = 'inline-block';
+
+  let html = `<div class="err-actions">
+    <button class="retry-btn" onclick="retryErrors()">🔄 重新刷错题</button>
+    <button onclick="clearErrors()">🗑️ 清空错题本</button>
+  </div>`;
+
+  for (const q of entries) {
+    const typeClass = q.type;
+    let ansText = '';
+    if (q.type === 'judgment') {
+      ansText = q.answer ? '正确' : '错误';
+    } else {
+      ansText = q.answer;
+    }
+    html += `<div class="err-item" onclick="goToQuestion('${q.uid}')">
+      <div class="e-header">
+        <span class="e-q">${escapeHtml(q.question.substring(0, 80))}${q.question.length > 80 ? '…' : ''}</span>
+        <span class="e-tag ${typeClass}">${q.typeLabel}</span>
+      </div>
+      <div class="e-answer">
+        你的答案：<span class="wrong-ans">${q.userAnswer || '-'}</span> ｜
+        正确答案：<span class="correct-ans">${ansText}</span>
+      </div>
+    </div>`;
+  }
+  list.innerHTML = html;
+}
+
+function retryErrors() {
+  const entries = Object.values(state.wrongQuestions);
+  if (entries.length === 0) return;
+  // Remove from history so they become unanswered
+  for (const q of entries) {
+    delete state.history[q.uid];
+  }
+  state.wrongQuestions = {};
+  saveState();
+  state.mode = 'all';
+  document.querySelectorAll('.mode-filter button').forEach(b => b.classList.toggle('active', b.dataset.mode === 'all'));
+  updateShuffle();
+  state.currentIndex = 0;
+  switchTab('practice');
+  renderQuestion();
+  updateStats();
+}
+
+function clearErrors() {
+  if (!confirm('确定清空错题本吗？')) return;
+  state.wrongQuestions = {};
+  saveState();
+  renderErrors();
+  updateStats();
+}
+
+function goToQuestion(uid) {
+  const idx = state.shuffled.findIndex(q => q.uid === uid);
+  if (idx >= 0) {
+    state.currentIndex = idx;
+    switchTab('practice');
+    renderQuestion();
+  }
+}
+
+// ========== MINI STATS ==========
+function updateMiniStats() {
+  const total = ALL_QUESTIONS.length;
+  const done = Object.keys(state.history).length;
+  const correct = Object.values(state.history).filter(v => v.correct).length;
+  const wrong = done - correct;
+  const rate = done > 0 ? Math.round((correct / done) * 100) : 0;
+
+  document.getElementById('msTotal').textContent = total;
+  document.getElementById('msDone').textContent = done;
+  document.getElementById('msCorrect').textContent = correct;
+  document.getElementById('msWrong').textContent = wrong;
+  document.getElementById('msRate').textContent = rate + '%';
+}
+
+function updateStats() {
+  updateMiniStats();
+  updateProgressRing();
+  const errBadge = document.getElementById('errBadge');
+  const bmBadge = document.getElementById('bmBadge');
+  const bmCount = Object.keys(state.bookmarked).length;
+  if (bmCount > 0) { bmBadge.textContent = bmCount; bmBadge.style.display = 'inline-block'; } else { bmBadge.style.display = 'none'; }
+  const errCount = Object.keys(state.wrongQuestions).length;
+  if (errCount > 0) {
+    errBadge.textContent = errCount;
+    errBadge.style.display = 'inline-block';
+  } else {
+    errBadge.style.display = 'none';
+  }
+}
+
+// ========== PERSISTENCE ==========
+function toggleBookmark(uid) {
+  if (state.bookmarked[uid]) { delete state.bookmarked[uid]; }
+  else { state.bookmarked[uid] = true; }
+  saveState();
+  const btn = document.getElementById('bookmarkBtn');
+  if (btn) btn.textContent = state.bookmarked[uid] ? '\u2605' : '\u2606';
+  updateStats();
+}
+
+function renderBookmarks() {
+  const list = document.getElementById('bookmarkList');
+  const uids = Object.keys(state.bookmarked);
+  if (uids.length === 0) {
+    list.innerHTML = '<div class="err-empty"><div class="icon">\u2b50</div><p>还没有收藏的题目<br>刷题时点击题目旁的 \u2606 即可收藏</p></div>';
+    document.getElementById('bmBadge').style.display = 'none'; return;
+  }
+  document.getElementById('bmBadge').textContent = uids.length;
+  document.getElementById('bmBadge').style.display = 'inline-block';
+  const questions = uids.map(uid => ALL_QUESTIONS.find(q => q.uid === uid)).filter(Boolean);
+  let h = '';
+  for (const q of questions) {
+    const tc = q.type;
+    let at = '';
+    if (q.type === 'judgment') at = q.answer ? '\u2713 正确' : '\u2717 错误';
+    else at = q.answer;
+    h += '<div class="err-item" onclick="goToQuestion(\'' + q.uid + '\')">' +
+      '<div class="e-header"><span class="e-q">' + escapeHtml(q.question.substring(0, 80)) + (q.question.length > 80 ? '\u2026' : '') + '</span>' +
+      '<span class="e-tag ' + tc + '">' + q.typeLabel + '</span></div>' +
+      '<div class="e-answer">\u7b54\u6848\uff1a<span class="correct-ans">' + at + '</span>' +
+      (state.history[q.uid] ? ' \uff5c \u5df2\u7b54' + (state.history[q.uid].count || 1) + '\u6b21' : ' \uff5c \u672a\u4f5c\u7b54') + '</div></div>';
+  }
+  list.innerHTML = h;
+}
+
+function saveState() {
+  try {
+    localStorage.setItem('quiz_state', JSON.stringify({
+      history: state.history,
+      wrongQuestions: state.wrongQuestions,
+      bookmarked: state.bookmarked,
+      totalAnswers: state.totalAnswers,
+    }));
+  } catch(e) {}
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem('quiz_state');
+    if (raw) {
+      const saved = JSON.parse(raw);
+      if (saved.history) state.history = saved.history;
+      if (saved.wrongQuestions) state.wrongQuestions = saved.wrongQuestions;
+      if (saved.bookmarked) state.bookmarked = saved.bookmarked;
+      if (saved.totalAnswers) state.totalAnswers = saved.totalAnswers;
+    }
+    const loopVal = localStorage.getItem('quiz_loop');
+    if (loopVal === '1') {
+      state.loopMode = true;
+      document.getElementById('loopToggle')?.classList.add('active');
+    }
+  } catch(e) {}
+}
+
+// ========== THEME ==========
+function toggleTheme() {
+  const isDark = document.body.classList.toggle('dark');
+  document.getElementById('themeBtn').textContent = isDark ? '☀️' : '🌙';
+  localStorage.setItem('quiz_theme', isDark ? 'dark' : 'light');
+}
+
+function loadTheme() {
+  const saved = localStorage.getItem('quiz_theme');
+  if (saved === 'dark') {
+    document.body.classList.add('dark');
+    document.getElementById('themeBtn').textContent = '☀️';
+  }
+}
+
+// ========== UTILS ==========
+function escapeHtml(str) {
+  if (!str) return '';
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// ========== START ==========
+loadTheme();
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+  const practicePanel = document.getElementById('panelPractice');
+  if (!practicePanel.classList.contains('active')) return;
+
+  if (e.key === 'Enter' || e.key === ' ') {
+    const nextBtn = document.getElementById('nextBtn');
+    if (nextBtn && !nextBtn.disabled) { nextBtn.click(); e.preventDefault(); }
+    return;
+  }
+
+  // Check current question type
+  const qs = state.shuffled;
+  if (qs.length === 0 || state.currentIndex >= qs.length) return;
+  const q = qs[state.currentIndex];
+
+  if (q.type === 'judgment') {
+    if (e.key === '1' || e.key === '✓') { answerJudgment(true); e.preventDefault(); }
+    if (e.key === '2' || e.key === '✗') { answerJudgment(false); e.preventDefault(); }
+  } else if (q.type === 'single') {
+    const keyMap = { 'a': 'A', 'b': 'B', 'c': 'C', 'd': 'D', '1': 'A', '2': 'B', '3': 'C', '4': 'D' };
+    const mapped = keyMap[e.key.toLowerCase()];
+    if (mapped) { answerSingle(mapped); e.preventDefault(); }
+  } else if (q.type === 'multi') {
+    const keyMap = { 'a': 'A', 'b': 'B', 'c': 'C', 'd': 'D' };
+    const mapped = keyMap[e.key.toLowerCase()];
+    if (mapped) { toggleMulti(mapped); e.preventDefault(); }
+    if (e.key === 'Enter' && !state.answered) {
+      const confirmBtn = document.getElementById('confirmMulti');
+      if (confirmBtn && !confirmBtn.disabled) { confirmMulti(); e.preventDefault(); }
+    }
+  }
+});
+
+init();
+</script>
+</body>
+</html>
