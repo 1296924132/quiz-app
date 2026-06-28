@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip install *)",
+      "Bash(python *)",
+      "Bash(python3 *)",
+      "Bash(python -X utf8 *)",
+      "Bash(curl -s *)",
+      "Bash(curl -s -X POST *)"
+    ]
+  },
+  "skills": {
+    "generate-form": {
+      "description": "生成暑期社会实践申报书 Word 文档",
+      "command": "cd 申报书生成 && python create_filled_form.py"
+    }
+  }
+}

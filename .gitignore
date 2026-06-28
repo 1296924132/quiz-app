@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# 项目生成的文档
+*.docx
+*.pptx
+*.xlsx
+
+# 图像中间产物
+*.png
+*.jpg
+*.jpeg
+
+# Claude 配置 — 本地/敏感部分（匹配任意层级）
+.claude/settings.local.json
+.claude/memory/
+.claude-code-deepseek/
+.claude/workspaces/
+
+# 系统
+.DS_Store
+Thumbs.db
