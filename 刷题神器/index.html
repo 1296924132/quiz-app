@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>刷题神器 · 应用中心</title>
+<style>
+  :root {
+    --bg: #f0f2f5; --card-bg: rgba(255,255,255,0.85); --card-border: rgba(255,255,255,0.3);
+    --card-shadow: 0 8px 32px rgba(0,0,0,0.08); --text: #1a1a2e; --text-secondary: #6b7280;
+    --primary: #6366f1; --primary-light: #818cf8; --border: #e5e7eb;
+    --radius: 20px; --radius-sm: 12px; --font: 'Segoe UI',system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;
+  }
+  .dark { --bg: #0f172a; --card-bg: rgba(30,41,59,0.85); --card-border: rgba(255,255,255,0.06); --text: #e2e8f0; --text-secondary: #94a3b8; --border: #334155; }
+
+  *,*::before,*::after {box-sizing:border-box;margin:0;padding:0}
+  html {font-size:17px}
+  body {font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;transition:background var(--transition),color var(--transition);overflow-x:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px}
+
+  .bg-orbs {position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+  .bg-orbs span {position:absolute;border-radius:50%;opacity:.2;animation:orbFloat 30s ease-in-out infinite}
+  .bg-orbs span:nth-child(1) {width:380px;height:380px;background:var(--primary);top:-120px;left:-120px}
+  .bg-orbs span:nth-child(2) {width:300px;height:300px;background:#10b981;bottom:-80px;right:-80px;animation-delay:-10s}
+  .bg-orbs span:nth-child(3) {width:240px;height:240px;background:#f59e0b;top:55%;left:85%;animation-delay:-20s}
+  @keyframes orbFloat {0%,100%{transform:translate(0,0)scale(1)}50%{transform:translate(20px,-20px)scale(1.05)}}
+
+  .app {position:relative;z-index:1;max-width:560px;width:100%;text-align:center}
+
+  .logo {font-size:2rem;margin-bottom:6px}
+  h1 {font-size:1.6rem;font-weight:700;background:linear-gradient(135deg,var(--primary),var(--primary-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:4px}
+  .subtitle {font-size:.95rem;color:var(--text-secondary);margin-bottom:32px}
+
+  .app-grid {display:flex;flex-direction:column;gap:16px}
+
+  .app-card {
+    background:var(--card-bg);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+    border:1px solid var(--card-border);border-radius:var(--radius);
+    box-shadow:var(--card-shadow);padding:28px 32px;
+    cursor:pointer;transition:all .35s ease;text-align:left;
+    display:flex;align-items:center;gap:20px;
+    animation:cardIn .5s ease backwards;
+  }
+  .app-card:nth-child(1) {animation-delay:.1s}
+  .app-card:nth-child(2) {animation-delay:.2s}
+  .app-card:hover {transform:translateY(-4px);box-shadow:0 16px 48px rgba(0,0,0,0.12)}
+  .dark .app-card:hover {box-shadow:0 16px 48px rgba(0,0,0,0.4)}
+
+  @keyframes cardIn {from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+
+  .app-icon {
+    width:56px;height:56px;border-radius:16px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:1.8rem;flex-shrink:0;
+  }
+  .app-icon.gw {background:linear-gradient(135deg,rgba(99,102,241,0.12),rgba(129,140,248,0.08));color:var(--primary)}
+  .app-icon.jds {background:linear-gradient(135deg,rgba(16,185,129,0.12),rgba(52,211,153,0.08));color:#10b981}
+
+  .app-info h2 {font-size:1.15rem;font-weight:700;margin-bottom:3px}
+  .app-info p {font-size:.85rem;color:var(--text-secondary);line-height:1.5}
+  .app-info .tag {display:inline-block;padding:1px 10px;border-radius:12px;font-size:.72rem;font-weight:600;margin-top:6px}
+  .app-info .tag.gw-tag {background:rgba(99,102,241,0.12);color:var(--primary)}
+  .app-info .tag.jds-tag {background:rgba(16,185,129,0.12);color:#10b981}
+
+  .app-arrow {margin-left:auto;font-size:1.2rem;color:var(--text-secondary);opacity:.4;transition:all .3s ease}
+  .app-card:hover .app-arrow {opacity:1;transform:translateX(4px);color:var(--primary)}
+
+  .footer {margin-top:32px;font-size:.75rem;color:var(--text-secondary);opacity:.5}
+  .footer span {display:inline-block;margin:0 4px}
+
+  @media (max-width:480px) {
+    html {font-size:15px}
+    .app-card {padding:20px 18px;gap:14px}
+    .app-icon {width:44px;height:44px;font-size:1.4rem;border-radius:12px}
+    .app-info h2 {font-size:1rem}
+    h1 {font-size:1.3rem}
+  }
+</style>
+</head>
+<body>
+<div class="bg-orbs"><span></span><span></span><span></span></div>
+
+<div class="app">
+  <div class="logo">📚</div>
+  <h1>刷题神器</h1>
+  <p class="subtitle">选择你要开始的练习</p>
+
+  <div class="app-grid">
+    <a class="app-card" href="公文写作刷题神器（离线版）.html" style="text-decoration:none;color:inherit">
+      <div class="app-icon gw">📝</div>
+      <div class="app-info">
+        <h2>公文写作刷题</h2>
+        <p>选择题 · 判断/单选/多选<br>399道精选公文写作题库</p>
+        <span class="tag gw-tag">📖 继续刷题</span>
+      </div>
+      <span class="app-arrow">→</span>
+    </a>
+
+    <a class="app-card" href="中国近代史纲要.html" style="text-decoration:none;color:inherit">
+      <div class="app-icon jds">📜</div>
+      <div class="app-info">
+        <h2>中国近代史纲要</h2>
+        <p>问答题 · 随机/顺序/复习<br>10章37道大题 + 收藏搜索</p>
+        <span class="tag jds-tag">📖 开始刷题</span>
+      </div>
+      <span class="app-arrow">→</span>
+    </a>
+  </div>
+
+  <div class="footer">
+    <span>创作者：@那片梧桐那场雨</span>
+    <span>❤</span>
+    <span>@江楠</span>
+  </div>
+</div>
+</body>
+</html>

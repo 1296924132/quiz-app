@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
+<title>中国近代史纲要 · 刷题</title>
+<style>
+:root {
+  --bg: #f0f2f5; --card-bg: rgba(255,255,255,0.85); --card-bg-solid: #f8f9fc;
+  --card-border: rgba(255,255,255,0.3); --card-shadow: 0 8px 32px rgba(0,0,0,0.08);
+  --text: #1a1a2e; --text-secondary: #6b7280; --primary: #6366f1; --primary-light: #818cf8;
+  --primary-dark: #4f46e5; --success: #10b981; --success-bg: rgba(16,185,129,0.12);
+  --danger: #ef4444; --danger-bg: rgba(239,68,68,0.12); --warning: #f59e0b; --border: #e5e7eb;
+  --tag-bg: #f3f4f6; --radius: 16px; --radius-sm: 10px; --transition: 0.2s cubic-bezier(0.4,0,0.2,1);
+  --font: 'Segoe UI',system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;
+}
+.dark {
+  --bg: #0f172a; --card-bg: rgba(30,41,59,0.85); --card-border: rgba(255,255,255,0.06);
+  --card-shadow: 0 8px 32px rgba(0,0,0,0.3); --text: #e2e8f0; --text-secondary: #94a3b8;
+  --border: #334155; --tag-bg: #1e293b; --success-bg: rgba(16,185,129,0.15); --danger-bg: rgba(239,68,68,0.15);
+}
+*,*::before,*::after {box-sizing:border-box;margin:0;padding:0}
+html {font-size:17px;-webkit-text-size-adjust:100%;-webkit-touch-callout:none;scroll-behavior:smooth}
+button,.tab,.opt-btn,.nav-btn,.chapter-item,.res-item {-webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none}
+body {font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;min-height:-webkit-fill-available;transition:background-color var(--transition),color var(--transition);overflow-x:hidden;overflow-y:scroll;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain}
+.card,.card-actions button,.q-nav button,.tab,.sub-mode button,.stats-card,.reveal-btn {will-change:transform}
+
+.bg-orbs {position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;contain:strict}
+.bg-orbs span {position:absolute;border-radius:50%;opacity:.2;animation:orbFloat 30s ease-in-out infinite}
+.bg-orbs span:nth-child(1) {width:380px;height:380px;background:var(--primary);top:-120px;left:-120px}
+.bg-orbs span:nth-child(2) {width:300px;height:300px;background:var(--success);bottom:-80px;right:-80px;animation-delay:-10s}
+.bg-orbs span:nth-child(3) {width:240px;height:240px;background:var(--warning);top:55%;left:85%;animation-delay:-20s}
+@keyframes orbFloat {0%,100%{transform:translate(0,0)scale(1)}50%{transform:translate(20px,-20px)scale(1.05)}}
+
+.cursor-glow {position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;contain:strict;background:radial-gradient(600px circle at var(--mx,-100px) var(--my,-100px),rgba(99,102,241,0.04)0%,transparent 40%)}
+.dark .cursor-glow {background:radial-gradient(600px circle at var(--mx,-100px) var(--my,-100px),rgba(99,102,241,0.06)0%,transparent 40%)}
+
+.app {position:relative;z-index:1;max-width:640px;margin:0 auto;padding:16px 16px calc(100px + env(safe-area-inset-bottom,20px))}
+@media (max-width:768px) {.app{padding:14px 14px 80px}html{font-size:16px}}
+@media (max-width:1024px) {.bg-orbs{display:none!important}body{background:var(--bg)}}
+@media (max-width:640px) {
+  .header,.mini-stats,.card,.modal-box,.stats-card,.err-item,.tab-bar,.search-box{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background:var(--card-bg-solid)!important}
+  .dark .header,.dark .mini-stats,.dark .card,.dark .modal-box,.dark .stats-card,.dark .err-item,.dark .tab-bar,.dark .search-box{background:rgba(30,41,59,0.95)!important}
+  .app{max-width:100%;padding:12px 12px 80px}html{font-size:16px}
+  .header{padding:12px 0 6px}.header h1{font-size:1.2rem}.header-actions{gap:6px}
+  .theme-btn{width:34px;height:34px;font-size:1rem}
+  .card{padding:20px 16px;border-radius:14px}.card-question{font-size:1.05rem}.card-chapter{font-size:.78rem}
+  .mini-stats{padding:8px 12px;gap:4px}.mini-stat .num{font-size:1.05rem}
+  .answer-inner{padding:14px 16px;font-size:.9rem}
+  .modal-box{padding:20px 16px}.tab{font-size:.82rem;padding:10px 6px}
+  .card-actions{gap:6px}.card-actions button{padding:10px 6px;font-size:.85rem}
+  .q-nav button{padding:10px;font-size:.82rem}
+  .sub-mode button{font-size:.78rem;padding:7px 4px}
+  .search-box{padding:8px 12px}.search-box input{font-size:.88rem}
+  .stats-grid{gap:8px}.stats-card{padding:12px 10px}.stats-card .s-num{font-size:1.3rem}
+  .chapter-progress-item{margin-bottom:10px}
+  .chapter-item{padding:11px 12px}.chapter-item .ch-name{font-size:.82rem}
+  .version-bar{font-size:.65rem;padding:10px 0 4px}
+  .footer{padding:12px 0 6px;gap:6px}
+  .footer span{font-size:.65rem}
+}
+@media (max-width:400px) {
+  .app{padding:8px 8px 70px}html{font-size:14px}
+  .header h1{font-size:1.1rem}.card{padding:16px 12px;border-radius:12px}.card-question{font-size:.95rem}
+  .mini-stats{flex-wrap:wrap;padding:6px 8px}.mini-stat{flex:0 0 33.33%}.mini-stat .num{font-size:.9rem}
+  .reveal-btn{padding:12px;font-size:.95rem}
+  .card-actions{flex-wrap:wrap}.card-actions button{min-width:calc(50% - 4px);flex:1 1 auto}
+  .q-nav{gap:4px}.q-nav button{padding:9px;font-size:.8rem}
+  .stats-grid{gap:6px}.stats-card{padding:10px 8px;border-radius:8px}.stats-card .s-num{font-size:1.1rem}
+  .footer{gap:4px}.footer span{font-size:.6rem}
+  .err-item{padding:10px 12px}.err-item .e-q{font-size:.85rem}
+}
+
+.header {display:flex;align-items:center;justify-content:space-between;padding:16px 0 8px;position:sticky;top:0;z-index:10;background:var(--bg);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);transition:background var(--transition)}
+.header h1 {font-size:1.4rem;font-weight:700;background:linear-gradient(135deg,var(--primary),var(--primary-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:flex;align-items:center;gap:10px}
+.header h1 svg {stroke:var(--primary);-webkit-text-fill-color:initial}
+.header-actions {display:flex;gap:8px;align-items:center}
+.theme-btn {width:38px;height:38px;border-radius:50%;border:1px solid var(--border);background:var(--card-bg);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.1rem;transition:all .3s ease;backdrop-filter:blur(8px);box-shadow:0 2px 8px rgba(0,0,0,0.03)}
+.theme-btn:hover {transform:scale(1.1);border-color:var(--primary);box-shadow:0 0 20px rgba(99,102,241,0.12)}
+
+.mini-stats {display:flex;gap:8px;margin:12px 0 12px;padding:10px 16px;border-radius:var(--radius-sm);background:var(--card-bg);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--card-border);box-shadow:var(--card-shadow),0 0 40px rgba(99,102,241,0.02);transition:all var(--transition)}
+.mini-stat {flex:1;text-align:center;transition:transform .25s ease}
+.mini-stat:hover {transform:translateY(-2px)}
+.mini-stat .num {font-size:1.2rem;font-weight:700;display:block;line-height:1.4;transition:color .3s}
+.mini-stat .lbl {font-size:.75rem;color:var(--text-secondary)}
+.mini-stat .num.total {color:var(--text)}
+.mini-stat .num.done {color:var(--primary)}
+.mini-stat .num.rate {color:var(--warning)}
+.mini-stat .num.bm {color:#eab308}
+
+.tab-bar {display:flex;gap:4px;padding:3px;background:var(--card-bg);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-radius:var(--radius-sm);border:1px solid var(--card-border);margin-bottom:12px;box-shadow:var(--card-shadow)}
+.tab {flex:1;padding:10px 8px;text-align:center;border-radius:7px;cursor:pointer;font-size:.88rem;font-weight:600;border:none;background:transparent;color:var(--text-secondary);transition:all .25s ease;font-family:var(--font)}
+.tab.active {background:var(--primary);color:#fff;box-shadow:0 2px 12px rgba(99,102,241,0.3),0 0 30px rgba(99,102,241,0.1)}
+.tab:hover:not(.active) {background:var(--tag-bg);transform:translateY(-1px)}
+.tab:active:not(.active) {transform:translateY(0)}
+.tab .badge {display:inline-block;background:var(--danger);color:#fff;font-size:.65rem;padding:1px 6px;border-radius:10px;margin-left:3px;vertical-align:top}
+
+.panel {display:none}
+.panel.active {display:block}
+
+/* ---------- Sub mode filter ---------- */
+.sub-mode {display:flex;gap:4px;padding:3px;background:var(--card-bg);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-radius:var(--radius-sm);border:1px solid var(--card-border);margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.02)}
+.sub-mode button {flex:1;padding:8px 6px;text-align:center;border-radius:7px;cursor:pointer;font-size:.82rem;font-weight:600;border:none;background:transparent;color:var(--text-secondary);transition:all .25s ease;font-family:var(--font)}
+.sub-mode button.active {background:var(--primary);color:#fff;box-shadow:0 2px 8px rgba(99,102,241,0.2)}
+.sub-mode button:hover:not(.active) {background:var(--tag-bg);transform:translateY(-1px)}
+
+/* ---------- Card ---------- */
+.card {background:var(--card-bg);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:var(--radius);border:1px solid var(--card-border);box-shadow:var(--card-shadow),0 0 60px rgba(99,102,241,0.03);padding:28px 24px;transition:all .35s ease;animation:cardIn .35s ease;position:relative;overflow:hidden}
+.card::before {content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--primary-light),transparent);opacity:0;transition:opacity .5s ease}
+.card:hover::before {opacity:.5}
+@keyframes cardIn {from{opacity:0;transform:translateY(24px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+.card-progress {display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.card-progress .p-text {font-size:.85rem;color:var(--text-secondary);font-weight:600;white-space:nowrap}
+.card-progress .p-bar-wrap {flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.card-progress .p-bar {height:100%;background:linear-gradient(90deg,var(--primary),var(--primary-light));border-radius:2px;transition:width .5s ease;box-shadow:0 0 8px rgba(99,102,241,0.15)}
+.card-chapter {display:inline-block;padding:4px 14px;border-radius:20px;font-size:.78rem;font-weight:700;background:linear-gradient(135deg,rgba(99,102,241,0.12),rgba(129,140,248,0.08));color:var(--primary);margin-bottom:14px;border:1px solid rgba(99,102,241,0.1);box-shadow:0 2px 8px rgba(99,102,241,0.06)}
+.card-question {font-size:1.1rem;line-height:1.75;font-weight:550;margin-bottom:20px;letter-spacing:.01em}
+.reveal-btn {display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:13px;border-radius:var(--radius-sm);border:1.5px solid var(--primary);background:transparent;color:var(--primary);font-size:1rem;font-weight:700;cursor:pointer;transition:all .3s ease;font-family:var(--font);position:relative;overflow:hidden}
+.reveal-btn::after {content:'';position:absolute;inset:0;background:var(--primary);opacity:0;transition:opacity .3s ease}
+.reveal-btn:hover::after {opacity:1}
+.reveal-btn:hover {color:#fff;box-shadow:0 4px 20px rgba(99,102,241,0.3);transform:translateY(-1px)}
+.reveal-btn:active {transform:translateY(0)}
+.reveal-btn span,.reveal-btn svg {position:relative;z-index:1}
+.reveal-btn:disabled {opacity:.4;cursor:default;transform:none!important;box-shadow:none!important}
+.answer-wrap {display:none;margin-top:20px}
+.answer-wrap.open {display:block;animation:ansFadeIn .3s ease}
+.answer-inner {padding:18px 20px;background:rgba(99,102,241,0.07);border-radius:var(--radius-sm);border-left:3px solid var(--primary);line-height:1.85;font-size:.93rem;color:var(--text-secondary);box-shadow:0 0 30px rgba(99,102,241,0.04),inset 0 1px 0 rgba(255,255,255,0.05)}
+.answer-inner strong {color:var(--text)}.answer-inner p {margin-bottom:8px}.answer-inner p:last-child {margin-bottom:0}
+@keyframes ansFadeIn {from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+
+.card-actions {display:flex;gap:8px;margin-top:14px}
+.card-actions button {flex:1;padding:11px;border-radius:var(--radius-sm);border:1px solid var(--border);background:transparent;cursor:pointer;font-size:.92rem;font-weight:600;color:var(--text-secondary);font-family:var(--font);transition:all .25s ease;position:relative;overflow:hidden}
+.card-actions button:hover {border-color:var(--primary);color:var(--primary);background:rgba(99,102,241,0.06);transform:translateY(-1px);box-shadow:0 4px 12px rgba(99,102,241,0.08)}
+.card-actions button:active {transform:translateY(0)}
+.card-actions button.primary {background:var(--primary);color:#fff;border-color:var(--primary);box-shadow:0 4px 14px rgba(99,102,241,0.2)}
+.card-actions button.primary:hover {background:var(--primary-dark);box-shadow:0 6px 20px rgba(99,102,241,0.3);transform:translateY(-1px)}
+.card-actions button.mastered {border-color:var(--success);color:var(--success);background:var(--success-bg)}
+.card-actions button.mastered:hover {box-shadow:0 4px 12px rgba(16,185,129,0.15)}
+.card-actions button.bookmarked {border-color:#eab308;color:#eab308;background:rgba(234,179,8,0.1)}
+.card-actions button.bookmarked:hover {box-shadow:0 4px 12px rgba(234,179,8,0.15)}
+
+.q-nav {display:flex;gap:6px;margin-top:12px}
+.q-nav button {flex:1;padding:11px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--card-bg);cursor:pointer;font-size:.88rem;font-weight:600;color:var(--text-secondary);font-family:var(--font);transition:all .25s ease;backdrop-filter:blur(6px)}
+.q-nav button:hover:not(:disabled) {border-color:var(--primary);color:var(--primary);transform:translateY(-1px);box-shadow:0 4px 12px rgba(99,102,241,0.08)}
+.q-nav button:active:not(:disabled) {transform:translateY(0)}
+.q-nav button:disabled {opacity:.3;cursor:default}
+.q-nav button.shuffle {border-color:var(--primary);color:var(--primary)}
+.q-nav button.shuffle:hover {background:var(--primary);color:#fff;box-shadow:0 4px 16px rgba(99,102,241,0.25)}
+
+/* ---------- Stats panel ---------- */
+.stats-grid {display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.stats-card {background:var(--card-bg);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-radius:var(--radius-sm);border:1px solid var(--card-border);padding:16px 14px;text-align:center;box-shadow:var(--card-shadow);transition:all .3s ease;position:relative;overflow:hidden}
+.stats-card:hover {transform:translateY(-2px);box-shadow:var(--card-shadow),0 0 30px rgba(99,102,241,0.04)}
+.stats-card::after {content:'';position:absolute;top:0;left:0;right:0;height:2px;opacity:0;transition:opacity .3s ease}
+.stats-card.accent1::after {background:linear-gradient(90deg,var(--primary),var(--primary-light))}
+.stats-card.accent2::after {background:linear-gradient(90deg,var(--success),#34d399)}
+.stats-card.accent3::after {background:linear-gradient(90deg,#eab308,#fbbf24)}
+.stats-card.accent4::after {background:linear-gradient(90deg,var(--warning),#fbbf24)}
+.stats-card:hover::after {opacity:1}
+.stats-card .s-icon {font-size:1.5rem;margin-bottom:4px}
+.stats-card .s-num {font-size:1.6rem;font-weight:800;line-height:1.3}
+.stats-card .s-lbl {font-size:.8rem;color:var(--text-secondary);margin-top:2px}
+.stats-card.accent1 .s-num {color:var(--primary)}
+.stats-card.accent2 .s-num {color:var(--success)}
+.stats-card.accent3 .s-num {color:#eab308}
+.stats-card.accent4 .s-num {color:var(--warning)}
+
+.chapter-progress-wrap {padding:4px 0}
+.chapter-progress-item {margin-bottom:12px}
+.chapter-progress-item:last-child {margin-bottom:0}
+.chp-header {display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:4px}
+.chp-header .chp-name {color:var(--text);font-weight:600}
+.chp-header .chp-pct {color:var(--text-secondary)}
+.chp-bar-wrap {height:5px;background:var(--border);border-radius:3px;overflow:hidden;transition:box-shadow .3s ease}
+.chp-bar-wrap:hover {box-shadow:0 0 12px rgba(99,102,241,0.08)}
+.chp-bar {height:100%;background:linear-gradient(90deg,var(--primary),var(--primary-light));border-radius:3px;transition:width .8s ease;box-shadow:0 0 6px rgba(99,102,241,0.12)}
+
+/* ---------- Empty / list ---------- */
+.empty-state {text-align:center;padding:50px 20px;color:var(--text-secondary)}
+.empty-state .emoji {font-size:3rem;margin-bottom:12px;opacity:.5}
+.empty-state p {font-size:.95rem;line-height:1.6}
+
+.err-item {display:block;background:var(--card-bg);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-radius:var(--radius-sm);border:1px solid var(--card-border);padding:14px 16px;margin-bottom:8px;cursor:pointer;transition:all .25s ease;box-shadow:var(--card-shadow)}
+.err-item:hover {border-color:var(--primary);transform:translateY(-1px);box-shadow:var(--card-shadow),0 0 20px rgba(99,102,241,0.04)}
+.err-item .e-q {font-size:.95rem;line-height:1.6;margin-bottom:4px}
+.err-item .e-meta {font-size:.78rem;color:var(--text-secondary)}
+.err-item .e-chapter {color:var(--primary)}
+.err-item .e-tags {display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.err-item .e-tag {padding:2px 10px;border-radius:12px;font-size:.72rem;font-weight:600}
+.err-item .e-tag.bm {background:rgba(234,179,8,0.12);color:#eab308}
+.err-item .e-tag.done {background:var(--success-bg);color:var(--success)}
+.err-item .e-tag.undone {background:var(--danger-bg);color:var(--danger)}
+
+/* ---------- Search ---------- */
+.search-box {background:var(--card-bg);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-radius:var(--radius-sm);border:1px solid var(--card-border);padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;box-shadow:0 2px 8px rgba(0,0,0,0.02);transition:border-color .25s ease}
+.search-box:focus-within {border-color:var(--primary);box-shadow:0 0 20px rgba(99,102,241,0.06)}
+.search-box input {flex:1;border:none;background:transparent;outline:none;font-family:var(--font);font-size:.95rem;color:var(--text)}
+.search-box input::placeholder {color:var(--text-secondary)}
+.search-box .sc {flex-shrink:0;color:var(--text-secondary);font-size:.8rem}
+
+/* ---------- Modal ---------- */
+.overlay {display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.4);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);animation:fadeIn .25s ease;align-items:center;justify-content:center;padding:20px}
+.overlay.show {display:flex}
+.overlay .modal-box {background:var(--card-bg);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--card-border);border-radius:var(--radius);box-shadow:0 20px 60px rgba(0,0,0,0.15),0 0 80px rgba(99,102,241,0.03);padding:24px;max-width:480px;width:100%;max-height:80vh;overflow-y:auto;animation:modalIn .35s ease}
+.dark .overlay .modal-box {background:rgba(30,41,59,0.96)}
+@keyframes fadeIn {from{opacity:0}to{opacity:1}}
+@keyframes modalIn {from{opacity:0;transform:scale(.95) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.modal-header {display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.modal-header h2 {font-size:1.1rem;font-weight:700}
+.modal-close {width:32px;height:32px;border-radius:50%;border:none;background:var(--tag-bg);cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);transition:all .2s}
+.modal-close:hover {background:var(--border);transform:rotate(90deg)}
+
+.chapter-list {list-style:none}
+.chapter-item {padding:13px 16px;border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:7px;cursor:pointer;transition:all .25s ease;display:flex;align-items:center;justify-content:space-between}
+.chapter-item:hover {border-color:var(--primary);background:rgba(99,102,241,0.06);transform:translateY(-1px);box-shadow:0 4px 12px rgba(99,102,241,0.06)}
+.chapter-item .ch-name {font-size:.9rem;font-weight:600}
+.chapter-item .ch-count {font-size:.75rem;color:var(--text-secondary);background:var(--tag-bg);padding:2px 10px;border-radius:20px}
+.chapter-item.active {border-color:var(--primary);background:rgba(99,102,241,0.08)}
+.chapter-item .ch-check {color:var(--primary);font-size:1rem;opacity:0}
+.chapter-item.active .ch-check {opacity:1}
+
+.version-bar {text-align:center;padding:10px 0 2px;font-size:.68rem;color:var(--text-secondary);opacity:.4;user-select:none}
+.version-bar span {cursor:pointer}.version-bar span:hover {opacity:.8}
+.footer {text-align:center;padding:8px 0 4px;display:flex;flex-wrap:wrap;justify-content:center;gap:12px;font-size:.7rem;color:var(--text-secondary);opacity:.45;user-select:none}
+.footer span {cursor:default}
+.footer .f-heart {color:var(--danger);display:inline-block;animation:heartBeat 1.5s ease-in-out infinite}
+@keyframes heartBeat {0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+@media (max-width:640px) {.footer{gap:8px;font-size:.65rem;padding:6px 0 2px}}
+
+::-webkit-scrollbar {width:4px}
+::-webkit-scrollbar-track {background:transparent}
+::-webkit-scrollbar-thumb {background:var(--border);border-radius:2px}
+
+@media (hover:hover) and (pointer:fine) {
+  .card:hover {transform:translateY(-2px);box-shadow:0 12px 40px rgba(0,0,0,0.1)}
+  .dark .card:hover {box-shadow:0 12px 40px rgba(0,0,0,0.3)}
+  .chapter-item:hover,.err-item:hover {transform:translateY(-1px)}
+}
+
+/* ---------- Panel transition ---------- */
+.panel {display:none;animation:panelIn .3s ease}
+.panel.active {display:block}
+@keyframes panelIn {from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* ---------- Content visibility for performance ---------- */
+.stats-grid,.chapter-progress-wrap {contain:content}
+#searchResults {contain:content;min-height:100px}
+
+/* ---------- Toast ---------- */
+.toast-container {position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:9999;pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:8px}
+.toast {padding:10px 20px;border-radius:12px;font-size:.88rem;font-weight:600;color:#fff;box-shadow:0 8px 32px rgba(0,0,0,0.2);animation:toastIn .35s ease;backdrop-filter:blur(12px);pointer-events:auto;white-space:nowrap;max-width:90vw;text-align:center}
+.toast.toast-out {animation:toastOut .3s ease forwards}
+.toast.toast-success {background:rgba(16,185,129,0.92)}
+.toast.toast-warning {background:rgba(245,158,11,0.92)}
+.toast.toast-info {background:rgba(99,102,241,0.92)}
+.toast.toast-danger {background:rgba(239,68,68,0.92)}
+@keyframes toastIn {from{opacity:0;transform:translateY(20px) scale(.9)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes toastOut {from{opacity:1;transform:translateY(0) scale(1)}to{opacity:0;transform:translateY(-10px) scale(.9)}}
+
+/* ---------- Swipe hint ---------- */
+.swipe-hint {text-align:center;font-size:.68rem;color:var(--text-secondary);opacity:0;transition:opacity .6s ease;margin-top:6px;pointer-events:none}
+.swipe-hint.show {opacity:.4}
+
+/* ---------- Toast ---------- */
+.panel {display:none;animation:panelIn .3s ease}
+.panel.active {display:block}
+@keyframes panelIn {from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* ---------- Content visibility for performance ---------- */
+.stats-grid,.chapter-progress-wrap {contain:content}
+#searchResults {contain:content;min-height:100px}
+</style>
+</head>
+<body>
+<div class="cursor-glow" id="cursorGlow"></div>
+<div class="bg-orbs"><span></span><span></span><span></span></div>
+
+<div class="app">
+  <!-- Header -->
+  <div class="header">
+    <h1>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+      近代史纲要
+    </h1>
+    <div class="header-actions">
+<button class="theme-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
+    </div>
+  </div>
+
+  <!-- Mini Stats -->
+  <div class="mini-stats">
+    <div class="mini-stat"><span class="num total" id="msTotal">0</span><span class="lbl">总题</span></div>
+    <div class="mini-stat"><span class="num done" id="msDone">0</span><span class="lbl">已掌握</span></div>
+    <div class="mini-stat"><span class="num rate" id="msRate">0%</span><span class="lbl">进度</span></div>
+    <div class="mini-stat"><span class="num bm" id="msBm">0</span><span class="lbl">⭐收藏</span></div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tab-bar">
+    <button class="tab active" data-tab="practice" onclick="switchTab('practice')">📖 刷题</button>
+    <button class="tab" data-tab="stats" onclick="switchTab('stats')">📊 统计</button>
+    <button class="tab" data-tab="bookmarks" onclick="switchTab('bookmarks')">⭐ 收藏</button>
+    <button class="tab" data-tab="search" onclick="switchTab('search')">🔍 搜索</button>
+  </div>
+
+  <!-- ========== PANEL: PRACTICE ========== -->
+  <div class="panel active" id="panelPractice">
+    <div class="sub-mode">
+      <button class="active" onclick="setPracticeMode('random')" id="pmRandom">🎲 随机</button>
+      <button onclick="setPracticeMode('sequential')" id="pmSequential">📋 顺序</button>
+      <button onclick="setPracticeMode('review')" id="pmReview">🔄 复习</button>
+    </div>
+
+    <div class="card" id="card">
+      <div class="card-progress">
+        <span class="p-text" id="progressLabel">1 / 37</span>
+        <div class="p-bar-wrap"><div class="p-bar" id="progressBar" style="width:3%"></div></div>
+      </div>
+      <div class="card-chapter" id="chapterLabel">—</div>
+      <div class="card-question" id="questionText">加载中…</div>
+      <button class="reveal-btn" id="revealBtn" onclick="toggleAnswer()">👁️ 点击显示答案</button>
+      <div class="answer-wrap" id="answerWrap"><div class="answer-inner" id="answerText"></div></div>
+      <div class="card-actions">
+        <button onclick="toggleBookmark()" id="bmBtn">⭐ 收藏</button>
+        <button onclick="markMastered()" id="masterBtn">📌 标为已掌握</button>
+        <button class="primary" onclick="shuffleQuestion()" id="shuffleBtn">🎲 换一题</button>
+      </div>
+    </div>
+
+    <div class="q-nav">
+      <button onclick="prevQuestion()">← 上一题</button>
+      <button onclick="nextQuestion()">下一题 →</button>
+    </div>
+    <div class="swipe-hint" id="swipeHint">👆 左右滑动切换题目</div>
+  </div>
+
+  <!-- ========== PANEL: STATS ========== -->
+  <div class="panel" id="panelStats">
+    <div class="stats-grid">
+      <div class="stats-card accent1"><div class="s-icon">📚</div><div class="s-num" id="stTotal">0</div><div class="s-lbl">总题数</div></div>
+      <div class="stats-card accent2"><div class="s-icon">✅</div><div class="s-num" id="stDone">0</div><div class="s-lbl">已掌握</div></div>
+      <div class="stats-card accent3"><div class="s-icon">⭐</div><div class="s-num" id="stBm">0</div><div class="s-lbl">已收藏</div></div>
+      <div class="stats-card accent4"><div class="s-icon">📈</div><div class="s-num" id="stRate">0%</div><div class="s-lbl">完成率</div></div>
+      <div class="stats-card accent1" style="grid-column:1/2"><div class="s-icon">👀</div><div class="s-num" id="stSession">0</div><div class="s-lbl">本次学习</div></div>
+      <div class="stats-card accent2" style="grid-column:2/3"><div class="s-icon">⏱️</div><div class="s-num" id="stDuration">0分钟</div><div class="s-lbl">学习时长</div></div>
+    </div>
+    <div style="font-size:.9rem;font-weight:700;margin-bottom:10px;color:var(--text)">📊 各章节进度</div>
+    <div id="chapterProgressList" class="chapter-progress-wrap"></div>
+  </div>
+
+  <!-- ========== PANEL: BOOKMARKS ========== -->
+  <div class="panel" id="panelBookmarks">
+    <div style="font-size:.9rem;font-weight:700;margin-bottom:10px;color:var(--text)">⭐ 已收藏的题目</div>
+    <div id="bookmarkList"></div>
+  </div>
+
+  <!-- ========== PANEL: SEARCH ========== -->
+  <div class="panel" id="panelSearch">
+    <div class="search-box">
+      <span>🔍</span>
+      <input type="text" id="searchInput" placeholder="搜索题目关键词…" oninput="doSearch()">
+      <span class="sc" id="searchCount"></span>
+    </div>
+    <div id="searchResults"></div>
+  </div>
+</div>
+
+<!-- ========== Browse Overlay ========== -->
+<div class="overlay" id="browseOverlay">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>📖 题库浏览</h2>
+      <button class="modal-close" onclick="closeBrowse()">✕</button>
+    </div>
+    <ul class="chapter-list" id="chapterList"></ul>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+<div class="version-bar"><span onclick="openBrowse()">📖 近代史纲要 · 共37题</span></div>
+<div class="footer">
+  <span>创作者：@那片梧桐那场雨</span>
+  <span class="f-heart">❤</span>
+  <span>@江楠</span>
+</div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+const CHAPTERS = [
+  { name: '进入近代后中华民族的磨难与抗争', questions: [
+    { q: '为什么说鸦片战争是中国近代史的起点？', a: '①中国社会性质发生根本性变化：鸦片战争前，中国社会是封建社会，鸦片战争后，中国开始沦为半殖民地半封建社会；<br>②中国社会阶级发生变化：鸦片战争前，中国社会主要是地主阶级和农民阶级，鸦片战争后出现了新兴的资产阶级和无产阶级；<br>③中国社会主要矛盾发生变化：鸦片战争前，中国社会的主要矛盾是农民阶级与封建地主阶级之间的矛盾，鸦片战争后，中国社会的主要矛盾变成帝国主义和中华民族的矛盾、封建主义和人民大众的矛盾；<br>④中国社会革命任务发生变化。鸦片战争前，革命任务是反对本国封建势力，鸦片战争后，增加了反对外国资本主义殖民侵略的任务；<br>⑤革命性质也从传统的农民反封建斗争转为反帝反封建的旧民主主义革命。' },
+    { q: '资本—帝国主义的入侵给中国带来了什么？', a: '①经济上沦为资本—帝国主义的附庸：资本—帝国主义对中国经济的入侵，主要是强迫中国支付战争赔款和签订一系列的不平等条约，迫使中国自然经济解体，使中国沦为列强的原料产地和商品销售市场。并且他们同中国封建主义相勾结，导致了近代中国经济的落后和人民的贫困。<br>②政治上丧失部分主权：帝国主义主要通过控制中国的政府，来控制中国的内政和外交。中国逐渐由一个独立自主的国家沦为半殖民地半封建社会国家。<br>③文化上进行侵略和渗透：通过披着宗教外衣进行侵略活动，目的为侵略中国制造舆论。<br>④社会主要矛盾的变化：外国资本—帝国主义同中华民族的矛盾代替了本国封建主义同人民大众的矛盾而上升为主要矛盾。<br>⑤部分中国知识分子开始探索实现国家独立和现代化：为救亡图存、振兴中华而进行斗争和探索，使中华民族燃起新希望，标志着中华民族进步觉醒。' },
+    { q: '反对外国侵略的斗争具有什么意义？', a: '①近代中国人民进行的反侵略战争，沉重打击了帝国主义侵华的野心，粉碎了他们瓜分中国和把中国变成完全殖民地的图谋；<br>②振奋了民族精神，激励了民族斗志，提高了中国人民的民族觉醒意识；<br>③促进了部分中国人的觉醒，开始关注和研究国际形势发展。' },
+    { q: '反侵略战争失败的根本原因和教训是什么？', a: '<strong>（1）原因：</strong><br>①根本原因：近代中国社会制度的腐败。正是社会制度的腐败，使得经济技术落后的状况长期得不到改变。<br>②社会制度的腐败是反侵略战争失败的根本原因。腐败的中国半殖民地、半封建的社会制度，阻碍了中国人民群众的广泛动员与抵抗。<br>③近代中国经济技术的落后是反侵略战争失败的重要原因。当时的英国已经经历过工业革命，资本主义生产力获得突飞猛进的发展，而中国仍停留在封建的自然经济水平上。经济技术的落后直接造成军事装备的落后，军队指挥员不了解近代军事战术，从而造成军队素质和战斗力的低下。<br><br><strong>（2）失败的教训：</strong><br>中国人民必须把反对帝国主义的民族斗争和反对封建主义的阶级斗争统一起来，才能完成近代中国革命的任务。' }
+  ]},
+  { name: '不同社会力量对国家出路的早期探索', questions: [
+    { q: '如何认识太平天国农民战争的意义和失败的原因、教训？', a: '<strong>（1）意义：</strong><br>①沉重打击了封建统治阶级，强烈撼动了清政府的统治根基；<br>②是中国旧式农民战争的最高峰，具有不同于以往农民战争的新的历史特点；<br>③冲击了孔子和儒家经典的正统权威，一定程度上削弱了封建统治的精神支柱；<br>④有力地打击了外国侵略势力。<br><br><strong>（2）失败的原因：</strong><br>①农民阶级无法克服其所固有的阶级局限性，缺乏先进阶级的领导和科学思想理论的指导，所以无法从根本上提出正确的政治纲领和社会改革方案；<br>②太平天国中的领导集团贪污腐败，追求享乐，这些都大大削弱了太平天国的向心力和战斗力；<br>③太平天国在军事战略上存在失误；<br>④是以宗教发动和组织群众的，但是其不能正确指导斗争，同时给农民战争带来了危害；<br>⑤太平天国未能正确地对待儒学；<br>⑥太平天国的领袖们虽不承认不平等条约，但也没有理性认识西方资本主义侵略者。<br><br><strong>（3）失败的教训：</strong><br>在半殖民地、半封建的中国，农民具有伟大的革命潜力，但是其自身不能担负起领导反帝反封建斗争取得胜利的重任，单纯的农民战争不可能完成争取民族独立和人民解放的历史任务。' },
+    { q: '如何认识洋务运动的性质和失败的原因、教训？', a: '<strong>（1）性质：</strong><br>洋务运动是清朝封建统治阶级中的洋务派为了维护清朝的封建统治而进行的一场自救运动，既具有进步性，也具有落后的保守性。<br><br><strong>（2）失败的原因：</strong><br>①洋务运动具有封建性。新的生产力是同封建主义的生产关系及其上层建筑不相容的，是不可能在封建主义的桎梏下充分地发展起来的。<br>②洋务运动对列强具有依赖性。洋务派处处依赖外国，企图以此来达到自强求富的目的，无异于与虎谋皮。<br>③洋务企业的管理具有腐朽性。洋务企业管理仍是封建衙门式的，企业内部充斥着营私舞弊、贪污中饱、挥霍浪费等腐败现象。<br><br><strong>（3）失败的教训：</strong><br>洋务运动的失败说明，在不触动封建专制统治、不摆脱外国资本—帝国主义的侵略与控制的前提下，谋求通过局部的改革来发展本国资本主义，达到自强求富的目的是行不通的。' },
+    { q: '如何认识戊戌维新运动的意义和失败的原因、教训？', a: '<strong>（1）意义：</strong><br>①戊戌维新运动是一次爱国救亡运动，不仅贯穿着强烈的爱国主义精神，而且推动了中华民族的觉醒；<br>②戊戌维新运动是一场资产阶级性质的政治改良运动；<br>③戊戌维新运动也是一场思想启蒙运动；<br>④维新派在改革社会风俗习惯方面也提出了许多新的主张。<br><br><strong>（2）失败的原因：</strong><br>①维新派是民族资产阶级的政治代表，其势力弱小，而以慈禧太后为首的反对变法的守旧势力却相当强大，新旧势力对比差距十分明显；<br>②维新派自身的局限性：不敢否定封建主义，对帝国主义抱有幻想和脱离人民群众。<br><br><strong>（3）失败的教训：</strong><br>在半殖民地半封建的中国，企图通过统治者走自上而下的改良道路来解决问题，是根本行不通的，必须用革命的手段，推翻帝国主义、封建主义联合统治的半殖民地、半封建的社会制度。' }
+  ]},
+  { name: '辛亥革命与君主专制制度的终结', questions: [
+    { q: '革命派在与改良派论战中，是如何论述革命的必要性、正义性、进步性的？', a: '<strong>①革命的必要性：</strong>资产阶级革命派指出，清政府是帝国主义的"鹰犬"，因此爱国必须革命，只有通过革命，才能免"瓜分之祸"，获得民族独立和社会进步。<br><br><strong>②革命的正义性：</strong>对于改良派提出的"中国国民恶劣"说，革命派针锋相对地指出，不是"国民恶劣"，而是"政府恶劣"，民主共和是大势所趋，人心所向，拯救中国与建设中国都必须取法乎上，直接推行民主制度。只有"兴民权改民主"才是中国的唯一出路。<br><br><strong>③革命的进步性：</strong>革命派强调，当时的中国存在着严重的"地主强权"和"地权失平"的现象，必须通过平均地权以实现土地国有，在进行政治革命的同时实现社会革命，才能避免贫富不均等一系列社会问题的出现。' },
+    { q: '为什么说孙中山领导的辛亥革命引起了近代中国的历史性巨大变化？', a: '①辛亥革命推翻了封建势力的政治代表、帝国主义在中国的代理人清王朝的统治，沉重打击了中外反动势力，使中国反动统治者在政治上乱了阵脚；<br>②辛亥革命结束了中国延续两千多年封建社会的君主专制制度，建立了中国历史上第一个资产阶级共和政府，使民主共和的观念开始深入人心；<br>③辛亥革命推动了中国人民的思想解放；<br>④辛亥革命推动了中国的社会变革，促使社会经济、思想习惯和社会风俗等方面发生了新的积极变化；<br>⑤辛亥革命不仅在一定程度上打击了帝国主义的侵略势力，而且助推了亚洲各国民族解放运动的高涨。' },
+    { q: '辛亥革命为什么会失败？它的失败说明了什么？', a: '<strong>（1）失败原因</strong><br>①客观原因：帝国主义决不容许中国建立一个独立、富强的资产阶级共和国，使得帝国主义丧失殖民利益；帝国主义与以袁世凯为代表的大地主大买办势力，以及旧官僚、立宪派等一起勾结起来，从外部和内部绞杀了这场革命。<br>②主观原因：没有提出彻底的反帝反封建的革命纲领，不能充分发动和依靠人民群众，革命派没有形成统一的、坚强的领导核心。不能建立坚强的革命政党，作为团结一切革命力量的强有力的核心。<br><br><strong>（2）教训：</strong>辛亥革命的失败表明，资产阶级共和国的方案没有能够救中国，先进的中国人需要进行新的探索，为中国谋求新的出路。' }
+  ]},
+  { name: '中国共产党成立和中国革命新局面', questions: [
+    { q: '中国的先进分子为什么和怎样选择了马克思主义？', a: '<strong>（1）原因：</strong><br>①新文化运动的开展，在客观上为马克思主义在中国的传播创造了有利的条件。在政治上和思想上给予封建统治者前所未有的沉重打击，加速了中国人民的觉醒，否定了两千多年封建正统思想的权威；<br>②在新文化运动中，先进知识分子开始对资产阶级民主主义产生怀疑，为先进知识分子接受马克思主义提供了土壤；<br>③十月革命推动中国的先进分子从认同资产阶级民主主义转向认同社会主义；<br>④五四运动促进了马克思主义在中国的传播及其与中国工人运动的结合。<br><br><strong>（2）选择马克思主义的路径：</strong><br>①进行马克思主义思想运动。如早期的马克思主义思想运动，开始提出知识分子应当同劳动群众相结合的思想和新文化运动，使它们在更高的层次上得到了发扬。<br>②将马克思主义与中国工人运动相结合。中国共产党的早期组织进行了各项马克思主义与中国工人运动相结合的活动，成立了中国共产党。' },
+    { q: '为什么说中国共产党的成立是开天辟地的大事件？', a: '①中国共产党的成立使中国革命有了坚强的领导核心，灾难深重的中国人民有了可以依赖的组织者和领导者，中国革命从此不断向前发展，由民主主义革命向社会主义革命推进。<br>②中国共产党的成立，使中国革命有了科学的指导思想。中国共产党以马克思主义为指导思想，把马克思主义和中国革命的具体实践相结合，制定了正确的革命纲领和斗争策略，为中国人民指明了斗争的目标和走向胜利的道路。<br>③中国共产党的成立，使中国革命有了新的革命方法，并沟通了中国革命和世界无产阶级革命之间的联系，为中国革命获得广泛的国际援助以及避免走资本主义提供了客观可能性。<br>④中国共产党的成立，使中国革命的面貌焕然一新。中国共产党的成立，深刻改变了近代以后中华民族发展的方向和进程，深刻改变了中国人民和中华民族的前途和命运，深刻改变了世界发展的趋势和格局。' },
+    { q: '什么是中国共产党人的初心使命？为什么必须"不忘初心，牢记使命"？', a: '<strong>（1）中国共产党人的初心和使命：</strong><br>为中国人民谋幸福，为中华民族谋复兴。<br><br><strong>（2）"不忘初心，牢记使命"的原因：</strong><br>①为中国人民谋幸福，为中华民族谋复兴。这个初心和使命是激励中国共产党人不断前进的根本动力，是中国共产党领导中国人民取得革命胜利的重要原因。<br>②当前，中国的社会主义建设进入了新的阶段，新的历史阶段，意味着新的挑战，只有不忘初心，牢记使命，才能确保党的纯洁性，不断提高党的执政能力；才能推进改革，克服困难，最终达到中华民族伟大复兴的目标。' },
+    { q: '中国共产党成立后，中国革命呈现了哪些新面貌？', a: '①中国共产党是在特定的社会历史条件下成立的，它的成立是一个"开天辟地的大事变"，使当时中国革命的前途焕然一新。<br>②中国共产党成立后，第一次提出了反帝反封建的民族民主革命纲领，这为中国人民指出了明确的斗争目标。<br>③中国共产党成立后，发动工农群众开展革命斗争，在中国掀起了第一个工人运动的高潮，同时中国共产党也开始从事发动农民群众的工作，农民群众运动蓬勃发展。<br>④中国共产党成立后，实行国共合作，并在共同合作中发挥了重要作用，掀起了大革命高潮，推翻了北洋军阀的统治。' }
+  ]},
+  { name: '中国革命的新道路', questions: [
+    { q: '以毛泽东为主要代表的中国共产党人，是如何探索和开辟中国革命新道路的？', a: '①逐步探索开辟农村包围城市、武装夺取政权的革命新道路。1927年大革命失败后，八七会议确立土地革命与武装反抗国民党的总方针，南昌起义、秋收起义、广州起义拉开武装斗争序幕。党不再照搬以城市为中心的苏俄模式，转向农村发动农民、开展土地革命、创建革命根据地。<br>②毛泽东不仅在实践中首先把革命进攻的方向指向了农村，而且从理论上阐明了武装斗争的极端重要性和农村应当成为党的工作中心的思想。通过《中国的红色政权为什么能够存在？》《井冈山的斗争》阐明土地革命、武装斗争、根据地建设的内在联系；《星星之火，可以燎原》论证农村红色割据是革命高潮的关键力量。<br>③随着革命新道路的开辟，中国革命开始走向复兴。中国共产党领导的红军和根据地逐步发展起来，红军游击战争实际上已经成为中国革命的主要形式，农村革命根据地成为积蓄和锻炼革命力量的主要战略阵地。' },
+    { q: '中国革命新道路"新"在哪里？', a: '①农村包围城市，武装夺取政权，建立农村革命根据地，突破了苏联模式的局限。实现了中国革命由城市转向农村的历史性转变，保存和发展了革命力量；贴合本国国情，揭示了中国革命发展的规律，指导革命最终胜利；拓展马克思主义暴力革命理论，为半殖民地半封建国家的人民解放斗争提供了借鉴；实现马列主义同中国实际有机结合，是毛泽东思想形成的重要标志。<br>②土地革命是党在革命根据地开展打土豪、分田地、废除封建剥削和债务，满足农民群众土地要求的革命。1931年春，毛泽东制定完整的土地革命路线，调动了一切反封建的因素，保证了土地革命的胜利。<br>③新与旧是相对的，当时中国革命的道路被称为新，是要站在当时的历史舞台思考问题，相比以前的旧传统体制，对照革命以来走的弯路和错误，所以说新提出的革命道路是新的。' },
+    { q: '怎样认识长征的意义？如何继承和发扬长征精神？', a: '<strong>（1）长征的意义</strong><br>①中国工农红军长征是一次理想信念的伟大远征、是一次检验真理的伟大远征、是一次唤醒民众的伟大远征、是一次开创新局的伟大远征；<br>②长征的胜利，极大地促进了党在政治上和思想上的成熟；<br>③长征的胜利是中国革命转危为安的关键；<br>④长征宣告了国民党反动派消灭中国共产党和红军的图谋彻底失败，宣告了中国共产党和红军肩负着民族希望胜利实现了北上抗日的战略转移，实现了中国共产党和中国革命事业从挫折走向胜利的伟大转折；<br>⑤长征铸就了伟大的长征精神，长征精神为中国革命不断从胜利走向胜利提供了强大精神动力。<br><br><strong>（2）继承和发扬长征精神</strong><br>①加强红军长征及其精神的教育；②大力提倡长征精神；<br>③不断促进长征精神的与时俱进；④切实抓好发展这个党执政兴国的第一要务；<br>⑤始终保持与人民的血肉联系；⑥加强和改善党的领导。' },
+    { q: '土地革命战争时期，中国共产党是如何总结历史经验、加强党的思想理论建设的？', a: '①1935年12月，毛泽东作了《论反对日本帝国主义的策略》的报告，阐明党的抗日民族统一战线的新政策，批判党内的关门主义和对于革命的急性病，系统地解决了党的政治路线上的问题。<br>②1936年12月，毛泽东写了《中国革命战争的战略问题》，总结土地革命战争中党内军事问题上的大争论，系统地说明了有关中国革命战争战略方面的诸多问题。<br>③1937年夏，毛泽东在延安抗日军政大学讲授《实践论》和《矛盾论》，从马克思主义认识论的高度，总结中国共产党的历史经验，揭露和批评党内的主观主义（尤其是教条主义）的错误，深入论证马克思列宁主义基本原理同中国实际相结合的原则，科学地阐明了党的马克思主义的思想路线。' }
+  ]},
+  { name: '中华民族的抗日战争', questions: [
+    { q: '为什么说中国的抗日战争是神圣的民族解放战争？', a: '①从世界意义上看，中国的抗日战争是世界反法西斯战争的东方主战场。中国人民抗日战争的胜利，对世界各国夺取反法西斯战争的胜利，维护世界和平的伟大事业产生了巨大促进作用。<br>②从战争的性质上看，这是中国反抗日本殖民压迫的正义之战。日本发动野蛮侵略，制造南京大屠杀、实施生化战，摧残中华文明，给中华民族带来深重灾难。<br>③从战争的结果上看，这是近代以来中华民族反抗外敌入侵第一次取得完全胜利的民族解放战争。不仅捍卫了国家主权和领土完整，还促进了中华民族的觉醒，成为民族复兴转折点，奠基新民主主义革命的胜利，更凝聚民族精神，空前激发民族向心力与生命力。' },
+    { q: '为什么说中国共产党是中国人民抗日战争的中流砥柱？', a: '①共产党始终坚持全面抗战路线和持久战的方针。与国民党的片面抗战路线不同，中国共产党实行全面抗战路线，即人民战争路线，两条不同抗战路线的存在是中国一切问题的关键。《论持久战》系统阐明了抗日战争的发展规律和坚持抗战争取抗战胜利必须实行的战略总方针，是中国共产党领导抗日战争的纲领性文献，对全国抗战的战略指导产生了积极影响。<br>②开辟敌后战场，发展游击战争。<br>③坚持抗战团结进步的方针。<br>④建设抗日民主根据地。<br>⑤进行大后方的抗日民主运动和进步文化工作。<br>⑥进行自身建设开展整风运动，通过关于若干历史问题的决议。' },
+    { q: '怎样评价国民党政府在抗日战争中执行的路线和正面战场的地位与作用？', a: '①国民党政府推行片面抗战路线，仅依靠政府与正规军作战，不发动广大群众，战术上单纯阵地防御。这由其大地主大资产阶级的阶级属性决定，造成正面战场接连失利，脱离人民群众。<br>②正面战场整体对抗战胜利有重要贡献，尤其抗战防御阶段，牵制大量日军，为后方转移、兵力调配争取时间。<br>③在不同抗战阶段，其作用存在明显差别：防御阶段国民党积极作战，但片面路线造成惨重损失；相持阶段消极抗日、积极反共，战场地位大幅下滑；反攻阶段虽未停止作战，核心意图却是抢占胜利果实，对战局最终取胜作用有限。' },
+    { q: '如何理解中国人民抗日战争胜利对实现中华民族伟大复兴的意义？', a: '①中国人民抗日战争的胜利，不仅彻底粉碎了日本军国主义殖民奴役中国的图谋，有力捍卫了国家主权和领土完整，更洗刷了近代以来抗击外来侵略屡战屡败的民族耻辱。<br>②中国人民抗日战争的胜利，促进了中华民族的大团结，形成了伟大的抗战精神。中国向全世界展示了天下兴亡、匹夫有责的爱国情怀，视死如归、宁死不屈的民族气节，不畏强暴、血战到底的英雄气概，百折不挠、坚忍不拔的必胜信念。<br>③中国人民抗日战争的胜利，对世界各国夺取反法西斯战争的胜利，维护世界和平产生了巨大影响。中国人民为最终战胜法西斯势力作出了历史性贡献，国际地位显著提高，中国成为联合国安理会五个常任理事国之一。<br>④中国人民抗日战争的胜利，坚定了中国人民追求民族独立、自由和解放的意志，开启了古老中国凤凰涅槃、浴火重生的历史新征程，为中国共产党团结带领全国人民继续奋斗，赢得新民主主义革命胜利，奠定了重要基础。' }
+  ]},
+  { name: '为建立新中国而奋斗', questions: [
+    { q: '抗日战争胜利后，国民党政府为什么会陷入全民的包围中并迅速走向崩溃？', a: '①抗战后期，国民党政府实行专制独裁统治，官员们贪污腐化，丧失民心。抗战胜利之际，国民党政府所派官员"劫收"沦陷区，进一步丧失人心。<br>②国民党政府在抗战胜利后违背全国人民迫切要求休养生息、和平建国的意愿，执行反人民的内战政策。为了筹措内战经费，向人民征收各种捐税，滥发纸币，导致恶性通货膨胀，工农业生产严重萎缩，人民生活困苦。<br>③作为大地主、大资产阶级的代表，国民党政府无视民众对和平、民主、自由的诉求，持续强化独裁统治。种种倒行逆施使其彻底站在人民的对立面，民心尽失，激起全民反抗，陷入人民的包围，政权迅速走向崩溃。' },
+    { q: '如何认识民主党派的历史作用？中国共产党领导的多党合作和政治协商格局是怎样形成的？', a: '<strong>（1）历史作用：</strong>各民主党派均主张爱国民主、反对卖国独裁。抗战时期，他们助力抗日斗争与国统区民主运动；战后作为"第三方面"，多数党派与中共携手反对国民党内战独裁，支援国统区爱国民主运动，为新民主主义革命胜利、新中国建立作出重要贡献。<br><br><strong>（2）形成：</strong>各民主党派自成立起便与中共建立合作关系。中共长期主动同各党派协商、听取意见，支持其反独裁斗争，善意帮助其修正认识，不断融洽双方关系。国民党独裁迫害促使民主党派转向新民主主义立场，1948年民盟公开与中共合作，1949年各民主党派联合发文，表示接受中共领导、共建人民民主新中国。1949年9月各民主党派参加人民政协，正式接受中共领导，由在野党转变为参政党，中共领导的多党合作、政治协商格局基本形成。' },
+    { q: '为什么说"没有共产党，就没有新中国"？中国共产党领导中国革命取得胜利的基本经验是什么？', a: '<strong>（1）主要原因：</strong><br>①中国共产党作为工人阶级的政党，不仅代表着中国工人阶级的利益，而且代表着整个中华民族和全中国人民的利益。<br>②中国共产党是马克思主义的科学理论武装起来的，它以中国化的马克思主义即马克思列宁主义基本原理与中国实践相结合的毛泽东思想为一切工作的指针。<br>③中国共产党人在革命过程中始终英勇地站在斗争的最前线。以实际行动表明了自己是最有远见，最富于牺牲精神，最坚定，而又最能虚心体察民情并依靠群众的坚强的革命者，从而赢得了广大中国人民的衷心拥护。<br>④"没有共产党就没有新中国"。这是中国人民基于自己的切身体验所确认的客观真理。<br><br><strong>（2）基本经验：</strong><br>①必须坚持把马克思列宁主义基本原理同中国具体实际结合起来，必须不断推进马克思主义中国化事业。<br>②统一战线、武装斗争、党的建设，是中国共产党在中国革命中战胜敌人的三个法宝。<br>③中国共产党把自己锻炼成了一个有纪律的、有马克思列宁主义的理论武装的，采取自我批评方法的联系人民群众的党，成为掌握统一战线和武装斗争这两个武器，以实行对敌冲锋陷阵的英勇战士，成为全国各族人民拥戴的领导核心。<br>④中共建立了工人阶级领导的以工农联盟为基础的人民民主专政。' }
+  ]},
+  { name: '社会主义建设道路的探索', questions: [
+    { q: '如何理解过渡时期总路线的历史必然性？', a: '①过渡时期总路线的制定，是党依据新中国成立后的经济政治条件的新变化作出的重大决策，是党的总路线、总任务及发展战略上的重大转变，是符合新中国社会发展的实际和规律的。<br>②社会主义工业化是国家独立富强的首要条件，实现国家现代化是近代以来无数仁人志士孜孜以求的理想，也是中国共产党领导人民实现国家独立富强的必由之路，要改变落后面貌，巩固国家政权，就必须通过社会主义道路实现国家工业化。<br>③资本主义经济力量弱小，发展困难，不可能成为中国工业起飞的基础。<br>④对个体农业进行社会主义改造，是保证工业发展实现国家工业化的一个必要条件。<br>⑤当时的国际环境也促使中国选择社会主义，当时只有社会主义国家和第二次世界大战后为争取民族独立而斗争的国家同情中国，只有苏联能够援助中国，这也是促使中国共产党提出开始向社会主义逐步过渡的一个因素。' },
+    { q: '请结合当代中国发展进步的事实，谈谈你是如何认识建立社会主义制度的重大意义的？', a: '①它充分调动广大劳动者生产创造热情，解放发展生产力。我国如今GDP稳居世界第二，经济腾飞、综合国力大幅提升，根源在于社会主义制度为生产力发展扫清障碍、拓宽道路。<br>②该制度奠定根本政治前提与制度保障，是当代中国所有发展进步的根基，为国家稳定、改革发展提供坚实制度支撑。<br>③它明确社会主义先进文化发展方向，指引我国建设精神文明、传承弘扬优秀文化，凝聚全社会共同价值追求。<br>④这一变革让拥有世界近四分之一人口的中国迈入社会主义，壮大世界社会主义力量，是国际社会主义运动里程碑式胜利，深刻改变世界发展格局。' },
+    { q: '中国社会主义建设道路经历了怎样的艰辛探索？你是如何认识其中的经验教训的？', a: '<strong>（1）艰辛探索：</strong><br>社会主义建设探索时期出现诸多偏差：1957年反右扩大化、1958年"大跃进"与人民公社化运动、后续"反右倾"、社教运动过火斗争，大批干部、知识分子遭受冲击，经济与社会发展受挫；文艺、学术领域也出现过火政治批判。此后党内逐步抬高阶级斗争地位，提出"以阶级斗争为纲"，错误划定"走资派"，最终引发1966年起的"文化大革命"，给党和国家带来深重灾难。<br><br><strong>（2）历史经验教训：</strong><br>一是立足国情推进马克思主义中国化，找准社会主义建设道路；<br>二是认清社会主要矛盾，坚持以经济建设为中心，杜绝大规模阶级斗争运动；<br>三是遵循客观经济规律，建设规模速度匹配国力，摒弃急躁冒进；<br>四是健全社会主义民主法治，保障不同意见正常表达；<br>五是严守民主集中制与集体领导，反对个人崇拜；<br>六是坚持对外开放，吸收人类文明成果助力社会主义建设。' },
+    { q: '请结合当前中国面临的国际局势，谈谈我国建立独立的、比较完整的工业体系和国民经济体系的重大意义。', a: '①它是中国人民在中国共产党领导下艰苦奋斗的伟大成果，是社会主义制度优越性的生动体现，具有极其重要的战略意义。它为我们继续推进社会主义建设开拓了可以依靠的阵地，为实现现代化的伟大事业奠定了初步的物质基础。<br>②随着独立的、比较完整的工业体系的形成，工业在国民经济中的主导地位日益明显，发挥着越来越重要的作用。<br>③集中统一的经济管理体制起到了积极作用。它有利于把有限的资金、物力和技术力量集中起来，保证重点建设项目的完成，为中国以后的发展奠定了牢固的物质技术基础。<br>④独立的、比较完整的工业体系和国民经济体系，从根本上解决了工业化中"从无到有"的问题，而且也为中国同包括西方发达国家在内的世界各国在平等互利的原则下发展对外贸易和经济往来创建了前提。为我国构建以国内大循环为主体、国内国际双循环相互促进的新发展格局提供了基础条件和重要保障。' },
+    { q: '作为新时代的青年，我们应当如何弘扬社会主义革命和建设时期形成的历久弥新的时代精神？', a: '①作为当代青年，我们要追求远大理想，坚定崇高的信念。我们要把个人的奋斗志向与国家、民族的前途命运联系在一起，把个人今天的学习进步和祖国明天的繁荣昌盛紧紧联系在一起，使理想之花结出丰硕的成长成才之果。<br>②我们要做忠诚的爱国者，时刻不忘自己是中华人民共和国的一份子。维护国家利益，维护祖国统一，以振兴中华为己任。<br>③树立积极进取的人生态度，用科学高尚的人生观指引人生。明是非，知荣辱，辨善恶，在实践中不断地创造人生的价值，赋予人生与众不同的意义。<br>④我们还要加强道德修养，锤炼道德品质。要践行社会主义核心价值观，加强思想道德修养，做一个知荣辱讲道德的人。<br>⑤在日常生活中还要做到遵守社会公德，维护公共秩序，并且要增强法律意识，做一个知法、明法、守法的公民。' }
+  ]},
+  { name: '改革开放与中国特色社会主义的开创与发展', questions: [
+    { q: '为什么说党的十一届三中全会是新中国成立以来的伟大历史转折？', a: '①全会冲破了长期"左"倾错误的严重束缚，彻底否定了"两个凡是"的错误方针，高度评价了关于真理标准问题的讨论，并且果断停用了"以阶级斗争为纲"的口号，作出了把工作重点转移到社会主义现代化建设上来和实行改革开放的战略决策。<br>②全会强调要充分发扬民主，提出要实现民主制度化、法制化，健全党的民主集中制，健全党规党法，严肃党纪。<br>③全会结束了粉碎"四人帮"后党和国家工作徘徊中前进的局面，标志着中国共产党重新确立了马克思主义的思想路线、政治路线、组织路线，开启了我国改革开放和社会主义现代化建设新时期，实现了历史性的伟大转折。<br>④从这次全会开始，改革开放和开创中国特色社会主义的大幕拉开，邓小平理论也逐渐形成和发展起来，党的十一届三中全会作为一个伟大转折点而载入光辉史册。' },
+    { q: '中国特色社会主义是怎样开创的？', a: '①以毛泽东为主要代表的共产党人完成新民主主义与社会主义革命后，围绕社会主义建设开展长期艰辛探索，在生产力落后的国情下积累了宝贵建设经验，丰富发展了马克思主义理论。<br>②粉碎"四人帮"后，国内迫切纠正文革错误，同时全球经济、科技飞速发展，内外形势倒逼党作出关乎国家命运的重大抉择。为破除"两个凡是"束缚，邓小平主张完整把握实事求是这一毛泽东思想精髓，联合多位老一辈领导人领导真理标准问题大讨论，确立实践是检验真理唯一标准，为历史转折做好思想铺垫。<br>③1978年十一届三中全会冲破长期"左"倾束缚，否定"两个凡是"，停止"以阶级斗争为纲"，作出以现代化建设、改革开放为核心的战略部署。1992年党的十四大召开，确立邓小平建设有中国特色社会主义理论的全党指导地位。该理论系统解答落后国家建设社会主义的根本问题，是马列主义同当代中国实际结合的成果，继承发展了毛泽东思想，凝聚了全党全国人民的集体智慧。' },
+    { q: '中国特色社会主义是怎样接续发展的？', a: '①以毛泽东为代表的共产党人结合马列主义与中国革命实践创立毛泽东思想，指导我国取得新民主主义革命胜利、建立新中国、确立社会主义基本制度。<br>②十一届三中全会后，邓小平总结历史经验，推动改革开放，创立邓小平理论，回答中国特色社会主义建设基本问题。<br>③十三届四中全会以来，江泽民深化治党治国认识，形成"三个代表"重要思想。<br>④十六大后，胡锦涛立足发展实际，提出以人为本、全面协调可持续的科学发展观。<br>⑤十八大以来，习近平统筹理论与实践，系统回答新时代重大课题，创立习近平新时代中国特色社会主义思想，引领中国特色社会主义迈入新时代。' }
+  ]},
+  { name: '中国特色社会主义进入新时代', questions: [
+    { q: '联系我国社会主要矛盾的新变化，如何正确理解中国特色社会主义进入新时代的内涵和意义？', a: '<strong>（1）中国特色社会主义进入新时代的内涵：</strong><br>①是承前启后、继往开来，在新的历史条件下继续夺取中国特色社会主义伟大胜利的时代。<br>②是决胜全面建成小康社会、进而全面建设社会主义现代化强国的时代。<br>③是全国各族人民团结奋斗、不断创造美好生活、逐步实现全体人民共同富裕的时代。<br>④是全体中华儿女勠力同心、奋力实现中华民族伟大复兴中国梦的时代。<br>⑤这个新时代是我国不断为人类作出更大贡献的时代。<br><br><strong>（2）中国特色社会主义进入新时代的重大意义：</strong><br>①从中华民族复兴历程来看，意味着近代以来久经磨难的中华民族迎来了从站起来、富起来到强起来的伟大飞跃，迎来了实现中华民族伟大复兴的光明前景。<br>②从科学社会主义的发展进程看，意味着科学社会主义在21世纪的中国焕发出强大生机活力，在世界上高高举起了中国特色社会主义伟大旗帜。<br>③从人类历史进程看，意味着中国特色社会主义道路、理论、制度、文化不断发展，拓展了发展中国家走向现代化的途径，为解决人类问题贡献了中国智慧和中国方案。' },
+    { q: '联系实际谈谈党的十八大以来，党和国家事业发生了怎样的历史性变革，其意义是什么？', a: '<strong>（1）党的十八大以来，党和国家事业发生的历史性变革：</strong><br>①创立了新时代中国特色社会主义思想，明确坚持和发展中国特色社会主义的基本方略，提出一系列治国理政新理念新思想新战略，实现了马克思主义中国化时代化新的飞跃。<br>②党的领导得到全面加强。<br>③党和国家事业发展有了科学完整的战略部署。<br>④实现了小康这个中华民族的千年梦想。<br>⑤提出并贯彻新发展理念，着力推进高质量发展，推动构建新发展格局，实施供给侧结构性改革，制定一系列具有全局性意义的区域重大战略，我国经济实力实现历史性跃升。<br>⑥全面深化改革取得重大突破。<br>⑦实行更加积极主动的开放战略。<br>⑧经济建设取得重大成就。<br>⑨民主法治建设迈出重大步伐。<br>⑩强军兴军开创新局面。<br>⑪港澳台工作取得新进展。<br>⑫全方位外交布局深入展开。<br>⑬全面从严治党成效卓著。<br><br><strong>（2）意义：</strong><br>①走过百年奋斗历程的中国共产党在革命性锻造中更加坚强有力，党同人民群众始终保持血肉联系。<br>②中国人民的前进动力更加强大、奋斗精神更加昂扬、必胜信念更加坚定。<br>③改革开放和社会主义现代化建设深入推进，实现中华民族伟大复兴进入了不可逆转的历史进程。<br>④科学社会主义在21世纪的中国焕发出新的蓬勃生机，中国式现代化为人类实现现代化提供了新的选择。' },
+    { q: '习近平在庆祝中国共产党成立100周年大会上的讲话中指出，在中华大地上全面建成了小康社会，是中华民族的伟大光荣、中国人民的伟大光荣、中国共产党的伟大光荣。联系历史和现实，谈谈全面建成小康社会的历史意义。', a: '①实现中华民族千年夙愿。从古至今小康只是百姓空想，中国共产党百年接续奋斗兑现为民谋幸福的承诺，让人民生活、国家发展迈上新台阶。<br>②是民族复兴的关键一步。一代代人接续推进小康建设，全面小康作为中国梦阶段性目标，彰显共同富裕的社会主义本质，圆满完成第一个百年目标，为建设社会主义现代化强国筑牢根基，实现中国从落后时代到大踏步追赶时代的跨越。<br>③为人类发展作出巨大贡献。它提升全球整体发展水平，让科学社会主义在21世纪焕发活力；中国式小康道路拓展发展中国家现代化路径，为希望自主发展的国家提供全新选择，贡献中国智慧与方案。' },
+    { q: '党的二十大强调"两个确立"，对新时代党和国家事业发展具有决定性意义。联系历史和现实，谈谈如何理解"两个确立"的决定性意义。', a: '①"两个确立"是新时代伟大变革的关键。树立领导核心、坚持科学理论是马克思主义政党的根本要求，也是党百年奋斗总结出的宝贵历史经验。十八大以来，正是依靠"两个确立"的引领，我们才开创中国特色社会主义新时代，让民族复兴迈入不可逆转的历史进程。<br>②"两个确立"是新征程制胜的必然要求。坚持它才能牢牢把握发展航向，凝聚全体人民力量共筑复兴中国梦。当下复兴之路机遇与风险并存，复杂内外环境下，坚强领导核心与科学理论能为我们应对各类挑战、掌握发展主动、赢得长远未来提供根本保障，是走好第二个百年奋斗道路的核心支撑。' }
+  ]}
+];
+
+// ============================================================
+// STATE
+// ============================================================
+let currentTab = 'practice';
+let practiceMode = 'random'; // 'random' | 'sequential' | 'review'
+let currentChapter = 0;
+let currentQuestion = 0;
+let isAnswerOpen = false;
+let mastered = JSON.parse(localStorage.getItem('近代史_mastered') || '[]');
+let bookmarks = JSON.parse(localStorage.getItem('近代史_bookmarks') || '[]');
+
+const totalQ = CHAPTERS.reduce((s, c) => s + c.questions.length, 0);
+
+function getGlobalIdx(ch, qi) {
+  let idx = 0;
+  for (let i = 0; i < ch; i++) idx += CHAPTERS[i].questions.length;
+  return idx + qi;
+}
+function isMastered(ch, qi) { return mastered.includes(getGlobalIdx(ch, qi)); }
+function isBookmarked(ch, qi) { return bookmarks.includes(getGlobalIdx(ch, qi)); }
+function toggleMasteredState(ch, qi) {
+  const g = getGlobalIdx(ch, qi);
+  if (mastered.includes(g)) mastered = mastered.filter(x => x !== g);
+  else mastered.push(g);
+  localStorage.setItem('近代史_mastered', JSON.stringify(mastered));
+}
+function toggleBookmarkState(ch, qi) {
+  const g = getGlobalIdx(ch, qi);
+  if (bookmarks.includes(g)) bookmarks = bookmarks.filter(x => x !== g);
+  else bookmarks.push(g);
+  localStorage.setItem('近代史_bookmarks', JSON.stringify(bookmarks));
+}
+
+function updateMiniStats() {
+  document.getElementById('msTotal').textContent = totalQ;
+  document.getElementById('msDone').textContent = mastered.length;
+  const pct = totalQ > 0 ? Math.round(mastered.length / totalQ * 100) : 0;
+  document.getElementById('msRate').textContent = pct + '%';
+  document.getElementById('msBm').textContent = bookmarks.length;
+}
+
+// ============================================================
+// RENDER
+// ============================================================
+function renderQuestion() {
+  const ch = CHAPTERS[currentChapter];
+  const q = ch.questions[currentQuestion];
+  if (!q) return;
+  isAnswerOpen = false;
+
+  document.getElementById('chapterLabel').textContent = ch.name;
+  document.getElementById('questionText').textContent = q.q;
+  document.getElementById('answerText').innerHTML = q.a;
+  document.getElementById('answerWrap').classList.remove('open');
+  document.getElementById('revealBtn').innerHTML = '👁️ 点击显示答案';
+  document.getElementById('revealBtn').disabled = false;
+
+  const idx = getGlobalIdx(currentChapter, currentQuestion);
+  document.getElementById('progressLabel').textContent = `${idx + 1} / ${totalQ}`;
+  document.getElementById('progressBar').style.width = `${(idx + 1) / totalQ * 100}%`;
+
+  updateMiniStats();
+
+  // Master btn
+  const masterBtn = document.getElementById('masterBtn');
+  if (isMastered(currentChapter, currentQuestion)) {
+    masterBtn.textContent = '✅ 已掌握';
+    masterBtn.className = 'mastered';
+  } else {
+    masterBtn.textContent = '📌 标为已掌握';
+    masterBtn.className = '';
+  }
+
+  // Bookmark btn
+  const bmBtn = document.getElementById('bmBtn');
+  if (isBookmarked(currentChapter, currentQuestion)) {
+    bmBtn.textContent = '✅ 已收藏';
+    bmBtn.className = 'bookmarked';
+  } else {
+    bmBtn.textContent = '⭐ 收藏';
+    bmBtn.className = '';
+  }
+
+  // Shuffle btn text
+  const sBtn = document.getElementById('shuffleBtn');
+  if (practiceMode === 'review') sBtn.textContent = '🔄 下一道未掌握';
+  else if (practiceMode === 'sequential') sBtn.textContent = '📋 继续顺序';
+  else sBtn.textContent = '🎲 换一题';
+
+  const card = document.getElementById('card');
+  card.style.animation = 'none';
+  requestAnimationFrame(() => { card.style.animation = 'cardIn 0.25s ease'; });
+}
+
+function toggleAnswer() {
+  const wrap = document.getElementById('answerWrap');
+  const btn = document.getElementById('revealBtn');
+  isAnswerOpen = !isAnswerOpen;
+  wrap.classList.toggle('open', isAnswerOpen);
+  btn.innerHTML = isAnswerOpen ? '🙈 隐藏答案' : '👁️ 点击显示答案';
+}
+
+function findPrevQuestion(ch, qi) {
+  if (qi > 0) return [ch, qi - 1];
+  if (ch > 0) return [ch - 1, CHAPTERS[ch - 1].questions.length - 1];
+  return null;
+}
+function findNextQuestion(ch, qi) {
+  if (qi < CHAPTERS[ch].questions.length - 1) return [ch, qi + 1];
+  if (ch < CHAPTERS.length - 1) return [ch + 1, 0];
+  return null;
+}
+
+function prevQuestion() {
+  const r = findPrevQuestion(currentChapter, currentQuestion);
+  if (r) { currentChapter = r[0]; currentQuestion = r[1]; renderQuestion(); }
+}
+function nextQuestion() {
+  const r = findNextQuestion(currentChapter, currentQuestion);
+  if (r) { currentChapter = r[0]; currentQuestion = r[1]; renderQuestion(); }
+}
+
+function findUnmastered() {
+  for (let i = 0; i < CHAPTERS.length; i++) {
+    for (let j = 0; j < CHAPTERS[i].questions.length; j++) {
+      if (!isMastered(i, j) && !(i === currentChapter && j === currentQuestion)) {
+        return [i, j];
+      }
+    }
+  }
+  return null;
+}
+
+function shuffleQuestion() {
+  if (practiceMode === 'review') {
+    const r = findUnmastered();
+    if (r) { currentChapter = r[0]; currentQuestion = r[1]; renderQuestion(); }
+    else {
+      showToast('🎉 全部掌握！太强了！', 'success', 3000);
+    }
+    return;
+  }
+  if (practiceMode === 'sequential') {
+    const r = findNextQuestion(currentChapter, currentQuestion);
+    if (r) { currentChapter = r[0]; currentQuestion = r[1]; renderQuestion(); }
+    return;
+  }
+  let ch, qi, a = 0;
+  do {
+    ch = Math.floor(Math.random() * CHAPTERS.length);
+    qi = Math.floor(Math.random() * CHAPTERS[ch].questions.length);
+    a++;
+  } while (ch === currentChapter && qi === currentQuestion && a < 50);
+  currentChapter = ch; currentQuestion = qi;
+  renderQuestion();
+}
+
+function markMastered() {
+  const wasMastered = isMastered(currentChapter, currentQuestion);
+  toggleMasteredState(currentChapter, currentQuestion);
+  if (!wasMastered) {
+    showToast('✅ 已标记为掌握！', 'success');
+    trackSession();
+  } else {
+    showToast('📌 已取消掌握标记', 'info');
+  }
+  renderQuestion();
+}
+function toggleBookmark() {
+  const wasBm = isBookmarked(currentChapter, currentQuestion);
+  toggleBookmarkState(currentChapter, currentQuestion);
+  showToast(wasBm ? '⭐ 已取消收藏' : '✅ 已加入收藏！', wasBm ? 'warning' : 'success');
+  renderQuestion();
+}
+
+// ============================================================
+// TABS
+// ============================================================
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  const panel = document.getElementById('panel' + tab.charAt(0).toUpperCase() + tab.slice(1));
+  if (panel) panel.classList.add('active');
+  if (tab === 'stats') renderStats();
+  if (tab === 'bookmarks') renderBookmarks();
+  if (tab === 'search') { document.getElementById('searchInput').focus(); doSearch(); }
+}
+
+function setPracticeMode(mode) {
+  practiceMode = mode;
+  document.querySelectorAll('.sub-mode button').forEach(b => b.classList.remove('active'));
+  document.getElementById('pm' + mode.charAt(0).toUpperCase() + mode.slice(1)).classList.add('active');
+  if (mode === 'review') {
+    const r = findUnmastered();
+    if (r) { currentChapter = r[0]; currentQuestion = r[1]; }
+    else { showToast('🎉 全部掌握！太强了！', 'success', 3000); }
+  }
+  renderQuestion();
+}
+
+// ============================================================
+// BROWSE OVERLAY
+// ============================================================
+function openBrowse() {
+  const list = document.getElementById('chapterList');
+  list.innerHTML = '';
+  CHAPTERS.forEach((ch, i) => {
+    const li = document.createElement('li');
+    li.className = 'chapter-item' + (i === currentChapter ? ' active' : '');
+    const allDone = ch.questions.every((_, qi) => isMastered(i, qi));
+    let doneCount = ch.questions.filter((_, qi) => isMastered(i, qi)).length;
+    li.innerHTML = `
+      <span class="ch-name">${ch.name}</span>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="ch-count">${doneCount}/${ch.questions.length}${allDone ? ' ✅' : ''}</span>
+        <span class="ch-check">✓</span>
+      </div>`;
+    li.onclick = () => { closeBrowse(); switchTab('practice'); currentChapter = i; currentQuestion = 0; renderQuestion(); };
+    list.appendChild(li);
+  });
+  document.getElementById('browseOverlay').classList.add('show');
+}
+function closeBrowse() { document.getElementById('browseOverlay').classList.remove('show'); }
+document.getElementById('browseOverlay').onclick = (e) => { if (e.target === document.getElementById('browseOverlay')) closeBrowse(); };
+
+// ============================================================
+// STATS
+// ============================================================
+function renderStats() {
+  const done = mastered.length;
+  const bm = bookmarks.length;
+  document.getElementById('stTotal').textContent = totalQ;
+  document.getElementById('stDone').textContent = done;
+  document.getElementById('stBm').textContent = bm;
+  document.getElementById('stRate').textContent = totalQ > 0 ? Math.round(done / totalQ * 100) + '%' : '0%';
+  document.getElementById('stSession').textContent = sessionReviewed;
+  const mins = Math.floor((Date.now() - sessionStarted) / 60000);
+  document.getElementById('stDuration').textContent = mins < 1 ? '<1分钟' : mins + '分钟';
+
+  const list = document.getElementById('chapterProgressList');
+  list.innerHTML = '';
+  CHAPTERS.forEach((ch, i) => {
+    const d = ch.questions.filter((_, qi) => isMastered(i, qi)).length;
+    const pct = ch.questions.length > 0 ? Math.round(d / ch.questions.length * 100) : 0;
+    const div = document.createElement('div');
+    div.className = 'chapter-progress-item';
+    div.innerHTML = `
+      <div class="chp-header">
+        <span class="chp-name">${ch.name}</span>
+        <span class="chp-pct">${d}/${ch.questions.length} · ${pct}%</span>
+      </div>
+      <div class="chp-bar-wrap"><div class="chp-bar" style="width:${pct}%"></div></div>`;
+    list.appendChild(div);
+  });
+}
+
+// ============================================================
+// BOOKMARKS
+// ============================================================
+function renderBookmarks() {
+  const list = document.getElementById('bookmarkList');
+  list.innerHTML = '';
+  if (bookmarks.length === 0) {
+    list.innerHTML = '<div class="empty-state"><div class="emoji">⭐</div><p>还没有收藏的题目<br>在刷题时点击 ⭐ 收藏 即可加入这里</p></div>';
+    return;
+  }
+  bookmarks.forEach(g => {
+    let acc = 0;
+    for (let i = 0; i < CHAPTERS.length; i++) {
+      if (g < acc + CHAPTERS[i].questions.length) {
+        const qi = g - acc;
+        const q = CHAPTERS[i].questions[qi];
+        const div = document.createElement('div');
+        div.className = 'err-item';
+        div.innerHTML = `
+          <div class="e-q">${q.q.length > 60 ? q.q.slice(0, 60) + '…' : q.q}</div>
+          <div class="e-meta"><span class="e-chapter">${CHAPTERS[i].name}</span></div>
+          <div class="e-tags">
+            <span class="e-tag bm">⭐ 收藏</span>
+            ${isMastered(i, qi) ? '<span class="e-tag done">✅ 已掌握</span>' : '<span class="e-tag undone">📌 未掌握</span>'}
+          </div>`;
+        div.onclick = () => { switchTab('practice'); currentChapter = i; currentQuestion = qi; renderQuestion(); };
+        list.appendChild(div);
+        break;
+      }
+      acc += CHAPTERS[i].questions.length;
+    }
+  });
+}
+
+// ============================================================
+// TOAST SYSTEM
+// ============================================================
+function showToast(msg, type = 'success', duration = 2000) {
+  const container = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = 'toast toast-' + type;
+  t.textContent = msg;
+  container.appendChild(t);
+  setTimeout(() => {
+    t.classList.add('toast-out');
+    setTimeout(() => t.remove(), 300);
+  }, duration);
+}
+
+// ============================================================
+// SESSION STATS
+// ============================================================
+let sessionReviewed = 0;
+let sessionStarted = Date.now();
+function trackSession() { sessionReviewed++; }
+
+// ============================================================
+// SWIPE GESTURE (Mobile)
+// ============================================================
+(function initSwipe() {
+  let sx = 0, ex = 0, swiping = false;
+  const card = document.getElementById('card');
+  card.addEventListener('touchstart', (e) => {
+    sx = e.touches[0].clientX;
+    swiping = true;
+  }, {passive: true});
+  card.addEventListener('touchmove', (e) => {
+    if (!swiping) return;
+    ex = e.touches[0].clientX;
+    const dx = ex - sx;
+    const threshold = 60;
+    if (Math.abs(dx) > threshold) {
+      swiping = false;
+      if (dx > 0) prevQuestion();
+      else nextQuestion();
+    }
+  }, {passive: true});
+  card.addEventListener('touchend', () => { swiping = false; }, {passive: true});
+
+  // Show swipe hint on mobile after first visit
+  if (!localStorage.getItem('近代史_swipe_hint')) {
+    setTimeout(() => {
+      const hint = document.getElementById('swipeHint');
+      hint.classList.add('show');
+      setTimeout(() => hint.classList.remove('show'), 5000);
+      localStorage.setItem('近代史_swipe_hint', '1');
+    }, 2000);
+  }
+})();
+
+// ============================================================
+// SEARCH (debounced)
+// ============================================================
+let searchTimer = null;
+function doSearch() {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    const q = document.getElementById('searchInput').value.trim().toLowerCase();
+    const results = document.getElementById('searchResults');
+    if (!q) {
+      results.innerHTML = '<div class="empty-state"><div class="emoji">🔍</div><p>输入关键词搜索题目</p></div>';
+      document.getElementById('searchCount').textContent = '';
+      return;
+    }
+    const found = [];
+    CHAPTERS.forEach((ch, ci) => {
+      ch.questions.forEach((qq, qi) => {
+        if (qq.q.toLowerCase().includes(q)) {
+          found.push({ ci, qi, chName: ch.name, question: qq.q });
+        }
+      });
+    });
+    document.getElementById('searchCount').textContent = found.length + ' 条结果';
+    if (found.length === 0) {
+      results.innerHTML = '<div class="empty-state"><p>未找到匹配的题目</p></div>';
+      return;
+    }
+    results.innerHTML = '';
+    found.forEach(f => {
+      const div = document.createElement('div');
+      div.className = 'err-item';
+      const idx = f.question.toLowerCase().indexOf(q);
+      let display = f.question;
+      if (idx > -1) {
+        display = f.question.slice(0, idx) + '<strong style="color:var(--primary)">' + f.question.slice(idx, idx + q.length) + '</strong>' + f.question.slice(idx + q.length);
+      }
+      if (display.length > 80) display = display.slice(0, 80) + '…';
+      div.innerHTML = `<div class="e-q">${display}</div><div class="e-meta"><span class="e-chapter">${f.chName}</span></div>`;
+      div.onclick = () => { switchTab('practice'); currentChapter = f.ci; currentQuestion = f.qi; renderQuestion(); };
+      results.appendChild(div);
+    });
+  }, 200);
+}
+
+// ============================================================
+// THEME
+// ============================================================
+function toggleTheme() {
+  document.body.classList.toggle('dark');
+  document.getElementById('themeBtn').textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
+  localStorage.setItem('近代史_theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+}
+if (localStorage.getItem('近代史_theme') === 'dark') {
+  document.body.classList.add('dark');
+  document.getElementById('themeBtn').textContent = '☀️';
+}
+
+// ============================================================
+// CURSOR (desktop only, passive)
+// ============================================================
+(function() {
+  let raf = null;
+  document.addEventListener('mousemove', (e) => {
+    if (raf) return;
+    raf = requestAnimationFrame(() => {
+      document.getElementById('cursorGlow').style.setProperty('--mx', e.clientX + 'px');
+      document.getElementById('cursorGlow').style.setProperty('--my', e.clientY + 'px');
+      raf = null;
+    });
+  }, {passive: true});
+})();
+
+// ============================================================
+// KEYBOARD
+// ============================================================
+document.addEventListener('keydown', (e) => {
+  if (document.getElementById('browseOverlay').classList.contains('show')) {
+    if (e.key === 'Escape') closeBrowse();
+    return;
+  }
+  if (currentTab !== 'practice') {
+    if (e.key === 'Escape') switchTab('practice');
+    return;
+  }
+  switch (e.key) {
+    case 'ArrowLeft': e.preventDefault(); prevQuestion(); break;
+    case 'ArrowRight': e.preventDefault(); nextQuestion(); break;
+    case 'ArrowUp': e.preventDefault(); toggleAnswer(); break;
+    case ' ': e.preventDefault(); toggleAnswer(); break;
+    case 'r': case 'R': shuffleQuestion(); break;
+    case 'm': case 'M': markMastered(); break;
+    case 'b': case 'B': toggleBookmark(); break;
+  }
+});
+
+// ============================================================
+// INIT
+// ============================================================
+renderQuestion();
+
+// Welcome toast with daily greeting
+const lastVisit = localStorage.getItem('近代史_lastVisit');
+const today = new Date().toDateString();
+if (lastVisit !== today) {
+  const unmasteredCount = totalQ - mastered.length;
+  if (unmasteredCount > 0) {
+    setTimeout(() => {
+      showToast(`📚 还有 ${unmasteredCount} 题待掌握，加油！`, 'info', 3000);
+    }, 800);
+  } else if (totalQ > 0) {
+    setTimeout(() => {
+      showToast('🎉 全部掌握！太强了！', 'success', 3000);
+    }, 800);
+  }
+  localStorage.setItem('近代史_lastVisit', today);
+}
+</script>
+</body>
+</html>
